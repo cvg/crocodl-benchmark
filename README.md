@@ -141,26 +141,15 @@ TODO:
 
 ## 5 CroCoDL team
 
-<<<<<<< HEAD
 <p align="center">
-    <img src="assets/cvg_logo_horizontal-1.svg" alt="cvg" height="70"> &nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="assets/logo_text.svg" alt="robot" height="80"> 
+    <img src="assets/cvg_logo_horizontal-1.svg" alt="cvg" height="50"> &nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="assets/logo_text.svg" alt="robot" height="50"> 
 </p>
 <p align="center">
-    <img src="assets/eth_logo_kurz_pos.svg" alt="eth" height="100"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="assets/UNI_Bonn_Logo_Kompakt.jpg" alt="bonn" height="80"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="assets/Microsoft_logo_(2012).svg.png" alt="mc" height="80"> 
+    <img src="assets/eth_logo_kurz_pos.svg" alt="eth" height="50"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="assets/UNI_Bonn_Logo_Kompakt.jpg" alt="bonn" height="50"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="assets/Microsoft_logo_(2012).svg.png" alt="mc" height="50"> 
 </p>
-=======
-- [x] LaMAR evaluation data and benchmark
-- [x] Ground truthing pipeline
-- [x] iOS capture app
-- [x] Full raw data
-- [x] Leaderboard and evaluation server
-- [ ] Leaderboard for sequence metrics
-- [ ] 3D dataset viewer
->>>>>>> fb872648d215de64c2a6c7189f743c6f52880bc6
-
 ## BibTex citation
 
 Please consider citing our work if you use any code from this repo or ideas presented in the paper:
