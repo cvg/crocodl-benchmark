@@ -15,7 +15,6 @@
     ·
     <a href="https://zuriabauer.com/">Zuria&nbsp;Bauer</a><sup>1</sup>
   </p>
-
   <p align="center">
     <sup>1</sup>ETH Zürich &nbsp;&nbsp;
     <sup>2</sup>Microsoft &nbsp;&nbsp;
@@ -98,8 +97,10 @@ for benchmarking pipeline only. If you wish to use processing too, also run:
 python -m pip install -e .[scantools]
 ```
 
+<<<<<<< HEAD
 #### 1.1.5 Contribution dependencies:
 Lastly, if you wish to contribute run:
+
 ```
 python -m pip install -e .[dev]
 ```
@@ -140,6 +141,7 @@ TODO:
 
 ## 5 CroCoDL team
 
+<<<<<<< HEAD
 <p align="center">
     <img src="assets/cvg_logo_horizontal-1.svg" alt="cvg" height="70"> &nbsp;&nbsp;&nbsp;&nbsp;
     <img src="assets/logo_text.svg" alt="robot" height="80"> 
@@ -149,6 +151,15 @@ TODO:
     <img src="assets/UNI_Bonn_Logo_Kompakt.jpg" alt="bonn" height="80"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <img src="assets/Microsoft_logo_(2012).svg.png" alt="mc" height="80"> 
 </p>
+=======
+- [x] LaMAR evaluation data and benchmark
+- [x] Ground truthing pipeline
+- [x] iOS capture app
+- [x] Full raw data
+- [x] Leaderboard and evaluation server
+- [ ] Leaderboard for sequence metrics
+- [ ] 3D dataset viewer
+>>>>>>> fb872648d215de64c2a6c7189f743c6f52880bc6
 
 ## BibTex citation
 
