@@ -54,6 +54,7 @@ def copy_session(session: Session, session_id: str, dst: Session,
         dst.trajectories[ts, new_ids[sensor_or_rig_id]] = pose
 
     # Copy ground truth trajectories
+    # overwrite_poses = True for map
     if dst.proc is None:
         dst.proc = Proc()
     if not overwrite_poses and aligned:

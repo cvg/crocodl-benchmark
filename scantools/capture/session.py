@@ -17,6 +17,7 @@ class Device(Enum):
     NAVVIS = 'NAVVIS'
     HOLOLENS = 'HOLOLENS'
     PHONE = 'PHONE'
+    SPOT = 'SPOT'
     UNDEFINED = 'UNDEFINED'
 
     @classmethod
@@ -26,10 +27,12 @@ class Device(Enum):
                 return Device.HOLOLENS
             if id_.startswith('ios'):
                 return Device.PHONE
+            if id_.startswith('spot'):
+                return Device.SPOT
         return Device.UNDEFINED
 
-
 # TODO: inherit Rigs, Trajectories, and Records from a common abstract class
+# TODO: add proc/: mesh, depth rendering, alignment, overlap
 @dataclass
 class Session:
     sensors: Sensors
@@ -52,6 +55,7 @@ class Session:
         all_devices = set(self.sensors.keys())
         if self.rigs is not None:
             assert len(self.sensors.keys() & self.rigs.keys()) == 0
+            assert len(self.rigs.sensor_ids - self.sensors.keys()) == 0
             all_devices |= self.rigs.keys()
         if self.trajectories is not None:
             assert len(self.trajectories.device_ids - all_devices) == 0
@@ -124,7 +128,7 @@ class Session:
             pose = T_rig2world * T_sensor2rig
         return pose
 
-    def save(self, path: Path, overwrite : bool = True):
+    def save(self, path: Path):
         path.mkdir(exist_ok=True, parents=True)
         for attr in fields(self):
             if attr.name == 'id':
@@ -133,7 +137,7 @@ class Session:
             if data is None:
                 continue
             filepath = path / self.filename(attr)
-            if not overwrite and filepath.exists() and attr.name != 'proc':
+            if filepath.exists() and attr.name != 'proc':
                 raise IOError(f'File exists: {filepath}')
             data.save(filepath)
         self.id = path.name

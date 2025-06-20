@@ -40,6 +40,7 @@ RUN bash /tmp/build_pcdmeshing.sh && rm /tmp/build_pcdmeshing.sh
 #
 # Scantools stage.
 #
+
 FROM common AS scantools
 
 RUN apt-get update && \
@@ -50,7 +51,8 @@ RUN apt-get update && \
         libsm6 \
         libxrender1 \
         libxext6 \
-        libzbar0
+        libzbar0 \
+        ffmpeg
 
 # Install raybender.
 COPY --from=builder /raybender/embree-3.12.2/lib /raybender/embree-3.12.2/lib
@@ -66,6 +68,7 @@ RUN rm -rfv /tmp/*
 
 RUN python3 -m pip install --no-deps \
         astral==3.2 \
+        soupsieve==2.7 \
         beautifulsoup4==4.12.2 \
         lxml==4.9.2 \
         matplotlib \
@@ -77,7 +80,15 @@ RUN python3 -m pip install --no-deps \
         rawpy==0.19.1 \
         scipy==1.11.4 \
         numpy==1.26.4 \
-        pillow==10.3.0
+        pillow==10.3.0 \
+        more_itertools==10.7.0 \
+        cv_bridge==1.13.0.post0 \
+        pyzbar==0.1.9 \
+        rospkg==1.6.0 \
+        h5py==3.10.0 \
+        pyquaternion==0.9.9 
+
+RUN python3 -m pip install bagpy==0.5
 
 RUN cd lamar && python3 -m pip install -e .[scantools] --no-deps
 WORKDIR /lamar

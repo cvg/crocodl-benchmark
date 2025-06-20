@@ -1,326 +1,166 @@
 <p align="center">
-  <h1 align="center"><img src="assets/lamar_white.svg" width="85"><br><ins>LaMAR</ins><br>Benchmarking Localization and Mapping<br>for Augmented Reality</h1>
+  <h1 align="center"><img src="assets/CroCo1.png" height="250"><br>CroCoDL: Cross-device Collaborative Dataset for Localization</h1>
   <p align="center">
-    <a href="https://psarlin.com/">Paul-Edouard&nbsp;Sarlin*</a>
+    <a href="https://hermannblum.net/">Hermann&nbsp;Blum</a><sup>1,3</sup>
     ·
-    <a href="https://dsmn.ml/">Mihai&nbsp;Dusmanu*</a>
-    <br>
-    <a href="https://demuc.de/">Johannes&nbsp;L.&nbsp;Schönberger</a>
+    <a href="https://github.com/alemercurio">Alessandro&nbsp;Mercurio</a><sup>1</sup>
     ·
-    <a href="https://www.microsoft.com/en-us/research/people/paspecia/">Pablo&nbsp;Speciale</a>
+    <a href="https://joshuaoreilly.com/">Joshua&nbsp;O’Reilly</a><sup>1</sup>
     ·
-    <a href="https://www.microsoft.com/en-us/research/people/lugruber/">Lukas&nbsp;Gruber</a>
+    <a href="https://scholar.google.com/citations?user=Ig5T__8AAAAJ&hl=de">Tim&nbsp;Engelbracht</a><sup>1</sup>
     ·
-    <a href="https://vlarsson.github.io/">Viktor&nbsp;Larsson</a>
+    <a href="https://dsmn.ml/">Mihai&nbsp;Dusmanu</a><sup>2</sup>
     ·
-    <a href="http://miksik.co.uk/">Ondrej&nbsp;Miksik</a>
+    <a href="https://www.microsoft.com/en-us/research/people/mapoll/">Marc&nbsp;Pollefeys</a><sup>1,2</sup>
     ·
-    <a href="https://www.microsoft.com/en-us/research/people/mapoll/">Marc&nbsp;Pollefeys</a>
+    <a href="https://zuriabauer.com/">Zuria&nbsp;Bauer</a><sup>1</sup>
   </p>
-<p align="center">
-    <img src="assets/logos.svg" alt="Logo" height="40">
-</p>
-  <h2 align="center">ECCV 2022</h2>
-  <h3 align="center"><a href="https://lamar.ethz.ch/">Project Page</a> | <a href="https://youtu.be/32XsRli2coo">Video</a></h3>
+
+  <p align="center">
+    <sup>1</sup>ETH Zürich &nbsp;&nbsp;
+    <sup>2</sup>Microsoft &nbsp;&nbsp;
+    <sup>3</sup>Lamar Institute / Uni Bonn
+  </p>
+  <h2 align="center">CVPR 2025</h2>
+  <h3 align="center">
+    <a href="https://localizoo.com/crocodl/">WEBSITE</a> | 
+    <a href="https://openaccess.thecvf.com/content/CVPR2025/html/Blum_CroCoDL_Cross-device_Collaborative_Dataset_for_Localization_CVPR_2025_paper.html"> PAPER</a>
+  </h3>
   <div align="center"></div>
 </p>
 <p align="center">
-    <a href="https://lamar.ethz.ch/"><img src="assets/teaser.svg" alt="Logo" width="80%"></a>
+    <a href="https://localizoo.com/crocodl/"><img src="assets/CrocoTeaser.png" alt="Logo" width="80%"></a>
     <br>
-    <em>LaMAR includes multi-sensor streams recorded by AR devices along hundreds of unconstrained trajectories captured over 2&nbsp;years in 3&nbsp;large indoor+outdoor locations.</em>
+    <em>CroCoDL: the first dataset to contain sensor recordings from real-world robots, phones, and mixed-reality headsets, covering a total of 10 challenging locations to benchmark cross-device and human-robot visual registra- tion.</em>
 </p>
 
 ##
 
-This repository hosts the source code for LaMAR, a new benchmark for localization and mapping with AR devices in realistic conditions. The contributions of this work are:
-1. __A dataset__: multi-sensor data streams captured by AR devices and laser scanners
-2. __scantools__: a processing pipeline to register different user sessions together
-3. __A benchmark__: a framework to evaluate algorithms for localization and mapping
+This repository hosts the source code for CroCoDL, the first dataset to contain sensor recordings from real-world robots, phones, and mixed-reality headsets, covering a total of 10 challenging locations to benchmark cross-device and human-robot visual registra-tion. The contributions of this work are:
+1. The (to the best of our knowledge) largest real-world cross-device visual localization dataset, focusing on diverse capture setups and environments.
+2. A novel benchmark on cross-device visual registration that shows considerable limitations of current state-of-the-art methods.
+3. Integration of the sensor streams of Boston Dynamic’s Spot robot into LaMAR’s pseudo-GTpipeline. We will release the code for the data pre-processing and the required changes to the pipeline.
 
-See our [ECCV 2022 tutorial](https://lamar.ethz.ch/tutorial-eccv2022/) for an overview of LaMAR and of the state of the art of localization and mapping for AR.
+## 0 Overview
 
-## Overview
+TODO:
 
-This codebase is composed of the following modules:
+## 1 Getting started
 
-- <a href="#benchmark">`lamar`</a>: evaluation pipeline and baselines for localization and mapping
-- <a href="#processing-pipeline">`scantools`</a>: data API, processing tools and pipeline
-- [ScanCapture](apps/ScanCapture_iOS): a data recording app for Apple devices
+Setting up of our pipeline is similar to setting up <a href="https://localizoo.com/crocodl/">Lamar</a> with added dependencies. You can choose to set it up either locally, or using docker. Local installation has been tested with:
 
-## Data format
+1. Ubuntu 20.04 and Cuda 12.1
+2. Ubuntu 22.03 and Cuda XX.X (lamar machine)
 
-We introduce a new data format, called *Capture*, to handle multi-session and multi-sensor data recorded by different devices. A Capture object corresponds to a capture location. It is composed of multiple sessions and each of them corresponds to a data recording by a given device. Each sessions stores the raw sensor data, calibration, poses, and all assets generated during the processing.
+### 1.1 Installation GPU
 
-```python
-from scantools.capture import Capture
-capture = Capture.load('data/CAB/')
-print(capture.sessions.keys())
-session = capture.sessions[session_id]  # each session has a unique id
-print(session.sensors.keys())  # each sensor has a unique id
-print(session.rigs)  # extrinsic calibration between sensors
-keys = session.trajectories.key_pairs()  # all (timestamp, sensor_or_rig_id)
-T_w_i = sessions.trajectories[keys[0]]  # first pose, from sensor/rig to world
+#### 1.1.1 Clone the repository:
 ```
+git clone git@github.com:cvg/crocodl-benchmark.git
+cd crocodl-benchmark
+```
+#### 1.1.2 Install virtual environment:
+```
+conda create -n croco python=3.10 pip
+conda activate croco
+```
+We have used conda, however, you could also choose venv.
 
-[More details are provided in the specification document `CAPTURE.md`.](./CAPTURE.md)
+#### 1.1.3 Install external dependencies:
+Depending on whether you would like to use exclusively benchmarking pipeline or processing pipeline, you can run:
+```
+chmod +x ./scripts/*
+./scripts/install_all_dependencies.sh
+```
+for processing pipeline, or:
+```
+chmod +x ./scripts/*
+./scripts/install_benchmarking_dependencies.sh
+```
+for benchmarking dependencies only. Full package of dependencies, installed by install_all_dependencies.sh, is (in order):
 
-## Installation
+  1. [Ceres Solver 2.1](https://ceres-solver.googlesource.com/ceres-solver/+/refs/tags/2.1.0)
+  2. [Colmap 3.8](https://colmap.github.io/install.html)
+  3. [hloc 1.4](https://github.com/cvg/Hierarchical-Localization)
+  4. [raybender](https://github.com/cvg/raybender)
+  5. [pcdmeshing](https://github.com/cvg/pcdmeshing)
 
-:one: Install the **core dependencies** using the provided script, tested on Ubuntu 22.04:
-  ```bash
-  scripts/install_core_dependencies.sh
-  ```
-Alternatively, you can install them manually in the following order:
-  * Python 3.9 / 3.10 (we recommend using a `venv` virtual environment).
-  * [Ceres Solver 2.1](https://ceres-solver.googlesource.com/ceres-solver/+/refs/tags/2.1.0)
-  * [Colmap 3.8](https://colmap.github.io/install.html) built from source. Note: **Do not install libceres-dev** as it was installed in the previous step.
-  * [hloc 1.4](https://github.com/cvg/Hierarchical-Localization) and its dependencies
+You can install these manually too using provided scripts inside ./scripts/install_{name_of_the_package}.
 
-:two: Install LaMAR libraries as editable packages:
-```bash
+
+#### 1.1.4 Additional python dependencies:
+Last two are only required by processing pipeline, and are not installed by install_benchmarking_dependencies. Now, additional python dependencies need to be installed. You can do this by running: 
+```
 python -m pip install -e .
 ```
+for benchmarking pipeline only. If you wish to use processing too, also run:
+```
+python -m pip install -e .[scantools]
+```
 
-:three: **Optional**: the processing pipeline additionally relies on heavier dependencies not required for benchmarking:
-
-- Pip dependencies: `python -m pip install -e .[scantools]`
-- [raybender](https://github.com/cvg/raybender) for raytracing
-- [pcdmeshing](https://github.com/cvg/pcdmeshing) for pointcloud meshing
-
-:four: **Optional**: if you wish to contribute, install the development tools as well:
-```bash
+#### 1.1.5 Contribution dependencies:
+Lastly, if you wish to contribute run:
+```
 python -m pip install -e .[dev]
 ```
 
-## Docker images
+### 1.2 Installation Docker
 
 The Dockerfile provided in this project has multiple stages, two of which are:
-`scantools` and `lamar`.
+`scantools` and `lamar`. For processing and benchamrking, respectively. You can build these images using:
 
-### Building the Docker Images
-
-You can build the Docker images for these stages using the following commands:
-```bash
-# Build the 'scantools' stage
-docker build --target scantools -t lamar:scantools -f Dockerfile ./
-
-# Build the 'lamar' stage
-docker build --target lamar -t lamar:lamar -f Dockerfile ./
+#### 1.2.1 Build the 'scantools' stage:
+```
+docker build --target scantools -t croco:scantools -f Dockerfile ./
+```
+#### 1.2.2 Build the 'lamar' stage:
+```
+docker build --target lamar -t croco:lamar -f Dockerfile ./
 ```
 
-### Pulling the Docker Images from GitHub Docker Registry
+## 3 Functionalities
 
-Alternatively, if you don't want to build the images yourself, you can pull them
-from the GitHub Docker Registry using the following commands:
-```bash
-# Pull the 'scantools' image
-docker pull ghcr.io/microsoft/lamar-benchmark/scantools:latest
+TODO:
 
-# Pull the 'lamar' image
-docker pull ghcr.io/microsoft/lamar-benchmark/lamar:latest
-```
+### Processing pipeline
 
-### Usage of docker images
+### Running GPU
 
-To use the `lamar` Docker image, you can follow these steps:
+### Running Docker
 
-1. **Set the `DATA_DIR` and `DOCKER_RUN` environment variables**:
+## 4 Data
 
-```bash
-export DATA_DIR=/path/to/data
-export DOCKER_RUN="docker run -it --rm --init -u $(id -u):$(id -g) -v ${DATA_DIR}:${DATA_DIR} ghcr.io/microsoft/lamar-benchmark/lamar:latest "
-```
+TODO:
 
-**Note**: replace `ghcr.io/microsoft/lamar-benchmark/lamar:latest` with
-`lamar:lamar` if you want to use the image you built locally.
+### 5.1 Raw Data
 
-2. **Run the desired command inside the Docker container, for example**:
+### 5.2 Capture Data
 
-```bash
-$DOCKER_RUN ls $DATA_DIR
-$DOCKER_RUN python pipelines/pipeline_navvis_rig.py --help
-```
+### 5.3 Dataset Overview
 
-The `DOCKER_RUN` variable is a prefix to the command you would run if the code
-were installed locally. This ensures the command runs inside the Docker
-container. The `DATA_DIR` will be mounted as a volume representing the same
-folder on the local machine, and the user/group will match the local environment
-to avoid having the output as root.
+## 5 CroCoDL team
 
-## Benchmark
-
-:one: __Obtain the evaluation data:__ [visit the dataset page](https://lamar.ethz.ch/lamar/) and place the 3 scenes in `./data` :
-
-```
-data/
-├── CAB/
-│   └── sessions/
-│       ├── map/                # mapping session
-│       ├── query_hololens/     # HoloLens test queries
-│       ├── query_phone/        # Phone test queries
-│       ├── query_val_hololens/ # HoloLens validation queries
-│       └── query_val_phone/    # Phone validation queries
-├── HGE
-│   └── ...
-└── LIN
-    └── ...
-```
-
-Each scene contains a mapping session and queries for each device type. We provide a small set of validation queries with known ground-truth poses such that they can be used for developing algorithms and tuning parameters. We keep private the ground-truth poses of the test queries.
-
-:two: __Run the single-frame evaluation__ with the strongest baseline:
-
-```bash
-python -m lamar.run \
-	--scene $SCENE --ref_id map --query_id $QUERY_ID \
-	--retrieval fusion --feature superpoint --matcher superglue
-```
-
-where `$SCENE` is in `{CAB,HGE,LIN}` and `$QUERY_ID` is in `{query_phone,query_hololens}` for testing and in `{query_val_phone,query_val_hololens}` for validation. All outputs are written to `./outputs/` by default. For example, to localize validation Phone queries in the CAB scene:
-```bash
-python -m lamar.run \
-	--scene CAB --ref_id map --query_id query_val_phone \
-	--retrieval fusion --feature superpoint --matcher superglue
-```
-
-This executes two steps:
-1. Create a sparse 3D map using the mapping session via feature extraction, pair selection, feature matching, triangulation
-2. Localize each image of the sequence via feature extraction, pair selection, feature matching, absolute pose estimation
-
-:three: __Obtain the evaluation results:__
-
-- validation queries: the script print the localization recall.
-- test queries: until the benchmark leaderboard is up and running, please send the predicted pose files to <a href="&#x6d;ailto&#58;lamar-benchmark&#x40;sympa.ethz.ch">lamar-benchmark&#x40;sympa.ethz.ch</a> :warning: we will only accept at most 2 submissions per user per week.
-
-:four: __Workflow:__ the benchmarking pipeline is designed such that
-- the mapping and localization process is split into modular steps listed in [`lamar/tasks/`](./lamar/tasks/)
-- outputs like features and matches are cached and re-used over multiple similar runs
-- changing a configuration entry automatically triggers the recomputation of all downstream steps that depend on it
-
-#### Other evaluation options
-
-<details>
-<summary>[Click to expand]</summary>
-
-Using radio signals for place recognition:
-```bash
-python -m lamar.run [...] --use_radios
-```
-
-Localization with sequences of 10 seconds instead of single images:
-```bash
-python -m lamar.run [...] --sequence_length_seconds 10
-```
-
-</details>
-
-#### Adding your own algorithms
-
-<details>
-<summary>[Click to expand]</summary>
-
-To add a new local feature:
-- add your feature extractor to hloc in [`hloc/extractors/myfeature.py`](https://github.com/cvg/Hierarchical-Localization/tree/master/hloc/extractors)
-- create a configuration entry in [`lamar.tasks.feature_extraction.FeatureExtraction.methods`](./lamar/tasks/feature_extraction.py)
-
-To add a new global feature for image retrieval:
-- add your feature extractor to hloc in [`hloc/extractors/myfeature.py`](https://github.com/cvg/Hierarchical-Localization/tree/master/hloc/extractors)
-- create a configuration entry in [`lamar.tasks.feature_extraction.RetrievalFeatureExtraction.methods`](./lamar/tasks/feature_extraction.py)
-
-To add a new local feature matcher:
-- add your feature matcher to hloc in [`hloc/matchers/mymatcher.py`](https://github.com/cvg/Hierarchical-Localization/tree/master/hloc/matchers)
-- create a configuration entry in [`lamar.tasks.feature_matching.RetrievalFeatureMatching.methods`](./lamar/tasks/feature_matching.py)
-
-To add a new pose solver: create a new class that inherits from [`lamar.tasks.pose_estimation.SingleImagePoseEstimation`](./lamar/tasks/pose_estimation.py):
-
-```python
-class MyPoseEstimation(SingleImagePoseEstimation):
-    method = {'name': 'my_estimator'}
-    def run(self, capture):
-        ...
-```
-
-</details>
-
-## Processing pipeline
-
-Each step of the pipeline corresponds to a runfile in `scantools/run_*.py` that can be used as follow:
-
-- executed from the command line: `python -m scantools.run_phone_to_capture [--args]`
-- imported as a library:
-
-```python
-from scantools import run_phone_to_capture
-run_phone_to_capture.run(...)
-```
-
-We provide pipeline scripts that execute all necessary steps:
-
-- [`pipelines/pipeline_scans.py`](pipelines/pipeline_scans.py) aligns multiple NavVis sessions and merge them into a unique reference session
-- [`pipelines/pipeline_sequence.py`](pipelines/pipeline_sequence.py) aligns all AR sequences to the reference session
-
-The raw data will be released soon such that anyone is able to run the processing pipeline without access to capture devices.
-
-Here are runfiles that could be handy for importing and exporting data:
-- `run_phone_to_capture`: convert a [ScanCapture](apps/ScanCapture_iOS) recording into a Capture session
-- `run_navvis_to_capture`: convert a NavVis recording into a Capture Session
-- `run_session_to_kapture`: convert a Capture session into a [Kapture](https://github.com/naver/kapture) instance
-- `run_capture_to_empty_colmap`: convert a Capture session into an empty [COLMAP model](https://colmap.github.io/format.html#sparse-reconstruction)
-- `run_image_anonymization`: anonymize faces and license plates using the [Brighter.AI](https://brighter.ai/) API
-- `run_radio_anonymization`: anonymize radio signal IDs
-- `run_combine_sequences`: combine multiple sequence sessions into a single session
-- `run_qrcode_detection`: detect QR codes in images and store their poses
-
-## Raw data
-
-We also release the raw original data, as recorded by the devices (HoloLens, phones, NavVis scanner), with minimal post-processing.
-Like the evaluation data, the raw data is accessed through [the dataset page](https://lamar.ethz.ch/lamar/).
-[More details are provided in the specification document `RAW-DATA.md`.](./RAW-DATA.md)
-
-## Release plan
-
- We are still in the process of fully releasing LaMAR. Here is the release plan:
-
-- [x] LaMAR evaluation data and benchmark
-- [x] Ground truthing pipeline
-- [x] iOS capture app
-- [x] Full raw data
-- [ ] Leaderboard and evaluation server
-- [ ] 3D dataset viewer
+<p align="center">
+    <img src="assets/cvg_logo_horizontal-1.svg" alt="cvg" height="70"> &nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="assets/logo_text.svg" alt="robot" height="80"> 
+</p>
+<p align="center">
+    <img src="assets/eth_logo_kurz_pos.svg" alt="eth" height="100"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="assets/UNI_Bonn_Logo_Kompakt.jpg" alt="bonn" height="80"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <img src="assets/Microsoft_logo_(2012).svg.png" alt="mc" height="80"> 
+</p>
 
 ## BibTex citation
 
 Please consider citing our work if you use any code from this repo or ideas presented in the paper:
 
 ```
-@inproceedings{sarlin2022lamar,
-  author    = {Paul-Edouard Sarlin and
-               Mihai Dusmanu and
-               Johannes L. Schönberger and
-               Pablo Speciale and
-               Lukas Gruber and
-               Viktor Larsson and
-               Ondrej Miksik and
-               Marc Pollefeys},
-  title     = {{LaMAR: Benchmarking Localization and Mapping for Augmented Reality}},
-  booktitle = {ECCV},
-  year      = {2022},
+@InProceedings{Blum_2025_CVPR,
+    author    = {Blum, Hermann and Mercurio, Alessandro and O'Reilly, Joshua and Engelbracht, Tim and Dusmanu, Mihai and Pollefeys, Marc and Bauer, Zuria},
+    title     = {CroCoDL: Cross-device Collaborative Dataset for Localization},
+    booktitle = {Proceedings of the Computer Vision and Pattern Recognition Conference (CVPR)},
+    month     = {June},
+    year      = {2025},
+    pages     = {27424-27434}
 }
 ```
-
-## Legal Notices
-
-Microsoft and any contributors grant you a license to the Microsoft documentation and other content
-in this repository under the [Creative Commons Attribution 4.0 International Public License](https://creativecommons.org/licenses/by/4.0/legalcode),
-see the [LICENSE](LICENSE) file, and grant you a license to any code in the repository under the [MIT License](https://opensource.org/licenses/MIT), see the
-[LICENSE-CODE](LICENSE-CODE) file.
-
-Microsoft, Windows, Microsoft Azure and/or other Microsoft products and services referenced in the documentation
-may be either trademarks or registered trademarks of Microsoft in the United States and/or other countries.
-The licenses for this project do not grant you rights to use any Microsoft names, logos, or trademarks.
-Microsoft's general trademark guidelines can be found at http://go.microsoft.com/fwlink/?LinkID=254653.
-
-Privacy information can be found at https://privacy.microsoft.com/en-us/
-
-Microsoft and any contributors reserve all other rights, whether under their respective copyrights, patents,
-or trademarks, whether by implication, estoppel or otherwise.

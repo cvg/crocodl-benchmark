@@ -30,7 +30,7 @@ class Trajectories(Dict[int, Dict[str, Pose]], dict):
             super(Trajectories, self).__setitem__(timestamp, value)
         else:
             raise TypeError('key must be either int or Tuple[int, str]')
-
+        
     def __getitem__(self, key: Union[int, KeyType]) -> Union[Dict[str, Pose], Pose]:
         if isinstance(key, tuple):  # pylint: disable=no-else-return
             timestamp, device_id = key

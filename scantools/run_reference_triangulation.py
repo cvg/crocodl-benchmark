@@ -21,6 +21,7 @@ default_matching_conf = imatch.MatchingConf.from_dict(
         global_features='netvlad',
         local_features='superpoint_aachen',
         matcher='superglue'))
+
 default_matching_conf.global_features['preprocessing']['resize_max'] = 1024
 
 

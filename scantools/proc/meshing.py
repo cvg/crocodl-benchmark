@@ -85,6 +85,9 @@ def mesh_from_pointcloud(pcd: o3d.geometry.PointCloud,
                          simplify_factor: Optional[int] = None,
                          simplify_error: Optional[float] = 1e-9,
                          ) -> Tuple[o3d.geometry.TriangleMesh, Dict]:
+    
+    print(af_num_parallel)
+    
     debug = {}
     simplified = None
     simplify = None
