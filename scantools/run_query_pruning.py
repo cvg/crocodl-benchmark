@@ -5,18 +5,26 @@ from typing import List, Dict
 
 from . import logger
 import numpy as np
-import matplotlib.pyplot as plt
-from itertools import compress
 
 from .capture import Session, Capture
 from .capture.session import Device
 
-from .proc.alignment.image_matching import (get_pairwise_distances,
-                                            MatchingConf, 
+from .proc.alignment.image_matching import (
+        get_pairwise_distances,
+        MatchingConf, 
     )
 
 from scantools import (
     run_sequence_aligner
+)
+
+from .viz.map_query import (
+    visualize_comparison, 
+    visualize_all
+)
+
+from .utils.utils import (
+    write_csv
 )
 
 conf_matcher = {'output': 'matches-superglue',
@@ -51,79 +59,12 @@ def save_configs(filename: Path):
 
     logger.info(f'Configuration saved to: {filename}')
 
-def save_keyframes(session: Dict, filename: Path):
-
-    with open(filename, 'w') as f:
-        f.write("# timestamp sensor_id\n")
-        for ts, sensor_id in session['keys']:
-            f.write(f'{ts} {sensor_id}\n')
-
-    return
-
 def check_distance_between_sesions(query: Dict, ref: Dict):
     T_q2w = [query['session'].proc.alignment_trajectories[ts, sensor_id] for ts, sensor_id in query['keys']]
     T_r2w = [ref['session'].proc.alignment_trajectories[ts, sensor_id] for ts, sensor_id in ref['keys']]
     dR, dt = get_pairwise_distances(T_q2w, T_r2w)
     distance_mask = np.any(~(dt > conf_pruning['distance']), axis=0)
     return distance_mask
-
-def visualize_all(query_data: List[Dict], filename: Path):
-    fig = plt.figure(figsize=(12, 8))
-    ax = fig.add_subplot(111, projection='3d')
-
-    if not query_data:
-        logger.warning("No query data available for visualization.")
-        return
-
-    for session_dict in query_data:
-        session_id = session_dict['session_id']
-        aligned_trajectory = [
-            session_dict['session'].proc.alignment_trajectories[ts, sensor_id]
-            for ts, sensor_id in session_dict['keys']
-        ]
-        aligned_poses = np.stack([T.t for T in aligned_trajectory]).astype(np.float32)
-
-        ax.scatter(aligned_poses[:, 0], aligned_poses[:, 1], aligned_poses[:, 2], label=session_id, s=10, alpha=0.6)
-
-    ax.set_title('Aligned 3D Trajectories (Top View)')
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-
-    ax.view_init(elev=90, azim=-90)
-
-    ax.legend()
-    plt.tight_layout()
-    plt.savefig(filename, dpi=300)
-    plt.close()
-
-    logger.info(f'Visualization for all queries saved to: {filename}')
-
-def visualize_comparison(poses: np.array, poses_pruned: np.array, filename: Path):
-    fig = plt.figure(figsize=(12, 8))
-
-    # Original trajectory subplot
-    ax1 = fig.add_subplot(1, 2, 1, projection='3d')
-    ax1.scatter(poses[:, 0], poses[:, 1], poses[:, 2], c='blue', alpha=0.5, s=10)
-    ax1.view_init(elev=90, azim=-90)
-    ax1.set_title('Original Trajectory')
-    ax1.set_xlabel('X')
-    ax1.set_ylabel('Y')
-    ax1.set_zlabel('Z')
-    ax1.grid(True)
-
-    # Pruned trajectory subplot
-    ax2 = fig.add_subplot(1, 2, 2, projection='3d')
-    ax2.scatter(poses_pruned[:, 0], poses_pruned[:, 1], poses_pruned[:, 2], c='red', s=10)
-    ax2.view_init(elev=90, azim=-90)
-    ax2.set_title('Pruned Trajectory')
-    ax2.set_ylabel('Y')
-    ax2.set_zlabel('Z')
-    ax2.grid(True)
-
-    plt.tight_layout()
-    plt.savefig(filename, dpi=300)
-    plt.close()
 
 def extract_keyframes(session: Session,
                       conf: MatchingConf):
@@ -213,15 +154,26 @@ def prune_cross_query(capture: Capture, sessions_data: List[Dict]):
         
         logger.info(f'      Saved {len(poses_pruned)} out of {len(aligned_poses)} keyframes for: {session_id}.')
         
-        filename_vis = capture.session_path(session_id) / 'proc' / 'visualisation_query_pruning.png'
+        filename_vis = capture.viz_path() / Path(session_id + 'visualisation_query_pruning.png')
         visualize_comparison(poses=aligned_poses, poses_pruned=poses_pruned, filename=filename_vis)
         logger.info(f'      Visualization saved to: {filename_vis}')
 
         filename_keys = capture.session_path(session_id) / 'proc' / 'keyframed_pruned.txt'
-        save_keyframes(session=query_session_pruned, filename=filename_keys)
+        # TODO: debug here
+        write_csv(filename_keys, ['timestamps', 'sensor_id'], query_session_pruned['keys'])
+        #save_keyframes(session=query_session_pruned, filename=filename_keys)
         logger.info(f'      Saved keyframes to: {filename_keys}')
 
     return session_data_pruned
+
+def save_keyframes(session: Dict, filename: Path):
+
+    with open(filename, 'w') as f:
+        f.write("# timestamp sensor_id\n")
+        for ts, sensor_id in session['keys']:
+            f.write(f'{ts} {sensor_id}\n')
+
+    return
 
 def subsample_queries(capture: Capture, sessions_data: List[Dict]):
 
@@ -253,12 +205,14 @@ def subsample_queries(capture: Capture, sessions_data: List[Dict]):
         
         logger.info(f'      Saved {len(keys_subsampled)} out of {len(aligned_poses)} keyframes for: {session_id}.')
 
-        filename = capture.session_path(session_id) / 'proc' / 'visualisation_query_subsampling.png'
-        visualize_comparison(poses=aligned_poses, poses_pruned=poses_subsampled, filename=filename)
-        logger.info(f'      Visualization saved to: {filename}')
+        filename_vis = capture.viz_path() / Path(session_id + 'visualisation_query_subsampling.png')
+        visualize_comparison(poses=aligned_poses, poses_pruned=poses_subsampled, filename=filename_vis)
+        logger.info(f'      Visualization saved to: {filename_vis}')
 
         filename_keys = capture.session_path(session_id) / 'proc' / 'keyframes_pruned_subsampled.txt'
-        save_keyframes(session=query_session_subsampled, filename=filename_keys)
+        # TODO: debug here
+        write_csv(filename_keys, ['timestamps', 'sensor_id'], query_session_subsampled['keys'])
+        #save_keyframes(session=query_session_subsampled, filename=filename_keys)
         logger.info(f'      Saved keyframes to: {filename_keys}')
     
     return session_data_subsampled
@@ -304,7 +258,9 @@ def process_queries(capture: Capture):
         query_data.append(query_session)
         
         filename_keys = capture.session_path(session_id) / 'proc' / 'keyframes_original.txt'
-        save_keyframes(session=query_session, filename=filename_keys)
+        # TODO: debug here
+        write_csv(filename_keys, ['timestamps', 'sensor_id'], query_session['keys'])
+        #save_keyframes(session=query_session, filename=filename_keys)
         logger.info(f'      Saved keyframes to: {filename_keys}')
         logger.info(f'      Loaded {len(keys)} keyframes for: {session_id}.')
 
@@ -314,11 +270,11 @@ def run(capture: Capture):
     
     save_configs(filename=capture.path / 'sessions' / 'query_pruning_config.txt')
     query_data = process_queries(capture=capture)
-    visualize_all(query_data=query_data, filename=capture.path / 'sessions' / 'visualisation_query_original_all.png')
+    visualize_all(query_data=query_data, filename=capture.viz_path() / 'visualisation_query_original_all.png')
     query_data_pruned = prune_cross_query(capture=capture, sessions_data=query_data)
-    visualize_all(query_data=query_data_pruned, filename=capture.path / 'sessions' / 'visualisation_query_pruning_all.png')
+    visualize_all(query_data=query_data_pruned, filename=capture.viz_path() / 'visualisation_query_pruning_all.png')
     query_data_subsampled = subsample_queries(capture=capture, sessions_data=query_data_pruned)
-    visualize_all(query_data=query_data_subsampled, filename=capture.path / 'sessions' / 'visualisation_query_subsampling_all.png')
+    visualize_all(query_data=query_data_subsampled, filename=capture.viz_path() / 'visualisation_query_subsampling_all.png')
 
     return query_data_subsampled
 

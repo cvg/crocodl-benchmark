@@ -1,18 +1,26 @@
 import argparse
 import numpy as np
-from . import logger
-from scantools.utils.utils import read_csv, write_csv
-from scantools.utils.io import read_sequence_list
 from pathlib import Path
+from scipy.spatial.transform import Rotation as R
+from scantools.capture import Capture
+from scantools.viz.map_query import (
+    map_query_visualization
+)
 from scantools import (
     run_combine_sequences, 
-    run_sequence_aligner, 
-    run_radio_transfer,
+    run_sequence_aligner,
     )
-from scantools.proc.alignment.image_matching import KeyFramingConf
-from scipy.spatial.transform import Rotation as R
-import matplotlib.pyplot as plt
-from scantools.capture import Capture
+from scantools.proc.alignment.image_matching import (
+    KeyFramingConf
+)
+from . import logger
+from scantools.utils.utils import (
+    read_csv, 
+    write_csv
+)
+from scantools.utils.io import (
+    read_sequence_list
+)
 
 def generate_random_transform_6DOF():
     """
@@ -103,134 +111,6 @@ def decompose_matrix(T):
     t = T[:3, 3]
     return q, t
 
-def set_axes_equal(ax):
-    """
-
-    Args:
-        
-    Returns:
-
-    """
-    x_limits = ax.get_xlim3d()
-    y_limits = ax.get_ylim3d()
-    z_limits = ax.get_zlim3d()
-
-    x_range = abs(x_limits[1] - x_limits[0])
-    x_middle = np.mean(x_limits)
-    y_range = abs(y_limits[1] - y_limits[0])
-    y_middle = np.mean(y_limits)
-    z_range = abs(z_limits[1] - z_limits[0])
-    z_middle = np.mean(z_limits)
-
-    plot_radius = 0.5 * max([x_range, y_range, z_range])
-
-    ax.set_xlim3d([x_middle - plot_radius, x_middle + plot_radius])
-    ax.set_ylim3d([y_middle - plot_radius, y_middle + plot_radius])
-    ax.set_zlim3d([z_middle - plot_radius, z_middle + plot_radius])
-
-def map_query_visualization(
-        translation_orig: list = [],
-        translation_new: list = [],
-        translation_restored: list = [],
-        visualization_path: str = '',
-        map_id: str = ''
-    ):
-    """
-
-    Args:
-        
-    Returns:
-
-    """
-
-    # TODO: SAVE INTO VISUALIZATION FOLDER
-
-    # ---------- Visualization ----------
-    translation_orig = np.array(translation_orig)
-    translation_new = np.array(translation_new)
-    translation_restored = np.array(translation_restored)
-
-    # ---------- Visualization: Original vs Restored ----------
-    elev, azim = 90, 0
-    fig = plt.figure(figsize=(10, 8))
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(*translation_orig.T, c='blue', label='Original', alpha=0.6)
-    ax.set_title(f"Original Trajectory: {map_id}")
-    ax.set_xlabel("X")
-    ax.set_ylabel("Y")
-    ax.set_zlabel("Z")
-    ax.view_init(elev=elev, azim=azim)
-    ax.legend()
-    set_axes_equal(ax)
-    ax.grid(True)
-
-    img_path_orig = visualization_path / Path(map_id + 'trajectory_original_topdown.png')
-    plt.savefig(img_path_orig)
-    plt.close()
-    logger.info(f"Saved original trajectory to {img_path_orig}")
-
-    fig = plt.figure(figsize=(10, 8))
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(*translation_new.T, c='red', label='Transformed', alpha=0.6)
-    ax.set_title(f"Transformed Trajectory: {map_id}")
-    ax.set_xlabel("X")
-    ax.set_ylabel("Y")
-    ax.set_zlabel("Z")
-    ax.view_init(elev=elev, azim=azim)
-    ax.legend()
-    set_axes_equal(ax)
-    ax.grid(True)
-
-    img_path_new = visualization_path / Path(map_id + 'trajectory_transformed_topdown.png')
-    plt.savefig(img_path_new)
-    plt.close()
-    logger.info(f"Saved transformed trajectory to {img_path_new}")
-
-    # ---------- Visualization: Original and Tranformed ----------
-    fig = plt.figure(figsize=(10, 8))
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(*translation_orig.T, c='blue', label='Original', alpha=0.6)
-    ax.scatter(*translation_new.T, c='red', label='Transformed', alpha=0.6)
-
-    ax.set_title(f"Trajectory Transform Visualization: {map_id}")
-    ax.set_xlabel("X")
-    ax.set_ylabel("Y")
-    ax.set_zlabel("Z")
-    #ax.view_init(elev=elev, azim=azim)
-    ax.view_init(elev=0, azim=0)
-    ax.legend()
-    set_axes_equal(ax)
-    ax.grid(True)
-
-    img_path = visualization_path / Path(map_id + 'trajectory_transform.png')
-    plt.savefig(img_path)
-    plt.close()
-    logger.info(f"Saved trajectory visualization to {img_path}")
-
-    # ---------- Visualization: Original vs Restored ----------
-    fig = plt.figure(figsize=(10, 8))
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(*translation_orig.T, c='blue', label='Original', alpha=0.6)
-    ax.scatter(*translation_restored.T, c='green', label='Restored', alpha=0.6)
-
-    for o, r in zip(translation_orig, translation_restored):
-        ax.plot([o[0], r[0]], [o[1], r[1]], [o[2], r[2]], c='gray', alpha=0.3)
-
-    ax.set_title(f"Inverse Transform Check: {map_id}")
-    ax.set_xlabel("X")
-    ax.set_ylabel("Y")
-    ax.set_zlabel("Z")
-    ax.view_init(elev=70, azim=30)
-    ax.legend()
-    set_axes_equal(ax)
-    ax.grid(True)
-
-    img_path_restored = visualization_path / Path(map_id + 'trajectory_inverse_transform.png')
-    plt.savefig(img_path_restored)
-    plt.close()
-    logger.info(f"Saved inverse transform check visualization to {img_path_restored}")
-
-
 def rotate_trajectories(
         capture: Capture, 
         map_id: str
@@ -310,12 +190,7 @@ def process_map_or_query(
     sessions_id = []
     capture_path = capture.path
     file_path = capture_path / f"{device}_{map_or_query}.txt"
-    #sessions_id = read_sequence_list(file_path)
-
-    #with open(file_path, "r") as f:
-    #    for line in f.readlines():
-    #        if not line.startswith("#"):
-    #            sessions_id.append(line.strip())
+    sessions_id = read_sequence_list(file_path)
 
     output_id = device + "_" + map_or_query
     logger.info(f"Merging {map_or_query} for {device} from file {file_path} into folder {output_id}.")
@@ -385,10 +260,6 @@ def run(capture: Capture,
         device = "spot"
         sessions_spot_m = process_map_or_query(device, capture, map_or_query)
 
-    if spotm and spotq and iosm and iosq and hlm and hlq:
-        print("TODO: radio transfer, maybe")
-        #run_radio_transfer.run(capture, [map_id, query_id_phone, query_id_hololens])
-    
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Merges sesions into query and map of at least one of ios, hl, or spot. Or any combination of them.")

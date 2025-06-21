@@ -5,6 +5,7 @@ import shutil
 import logging
 from tqdm import tqdm
 import cv2
+import multiprocessing
 import numpy as np
 
 from . import logger
@@ -54,7 +55,7 @@ def convert_to_us(time_s):
 
 def run(input_path: Path, capture: Capture, tiles_format: str, session_id: Optional[str] = None,
         downsample_max_edge: int = None, upright: bool = True, export_as_rig: bool = False,
-        export_trace: bool = False, copy_pointcloud: bool = False):
+        export_trace: bool = False, copy_pointcloud: bool = False, num_workers: int = multiprocessing.cpu_count()):
 
     if session_id is None:
         session_id = input_path.name
@@ -68,7 +69,7 @@ def run(input_path: Path, capture: Capture, tiles_format: str, session_id: Optio
         export_as_rig = True
 
     output_path = capture.data_path(session_id)
-    nv = NavVis(input_path, output_path, tiles_format, upright)
+    nv = NavVis(input_path, output_path, tiles_format, upright, num_workers)
 
     frame_ids = nv.get_frame_ids()
     camera_ids = nv.get_camera_indexes()

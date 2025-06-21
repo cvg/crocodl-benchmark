@@ -1,6 +1,8 @@
-outputs
-data
-external
+outputs/
+data/
+external/
+raybender/
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

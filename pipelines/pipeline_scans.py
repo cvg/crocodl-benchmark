@@ -21,7 +21,7 @@ align_conf = run_scan_aligner.Conf.from_dict(dict(
 align_conf.matching.global_features['preprocessing']['resize_max'] = 1024
 
 
-def main(capture_path: Path, session_ids: List[str], navvis_dir: Path, num_workers_mesh: int = 10):
+def main(capture_path: Path, session_ids: List[str], navvis_dir: Path, num_workers: int = 10):
     if capture_path.exists():
         capture = Capture.load(capture_path)
     else:
@@ -39,12 +39,12 @@ def main(capture_path: Path, session_ids: List[str], navvis_dir: Path, num_worke
             run_navvis_to_capture.run(
                 navvis_dir / session, capture, tiles_format, session,
                 downsample_max_edge=downsample_max_edge,
-                copy_pointcloud=True)
+                copy_pointcloud=True, num_workers=num_workers)
 
         if (not capture.sessions[session].proc
                 or mesh_id not in capture.sessions[session].proc.meshes):
             logger.info('Meshing session %s.', session)
-            run_meshing.run(capture, session, 'point_cloud_final', mesh_id, method=meshing_method, af_num_parallel=num_workers_mesh)
+            run_meshing.run(capture, session, 'point_cloud_final', mesh_id, method=meshing_method, af_num_parallel=num_workers)
 
         if not capture.sessions[session].depths:
             logger.info('Rendering session %s.', session)
@@ -71,7 +71,7 @@ def main(capture_path: Path, session_ids: List[str], navvis_dir: Path, num_worke
             export_depths=True, export_meshes=True)
         logger.info('Meshing combined session %s.', session_id)
         run_meshing.run(
-            capture, session_id, 'point_cloud_combined', 'mesh', method=meshing_method, af_num_parallel=num_workers_mesh)
+            capture, session_id, 'point_cloud_combined', 'mesh', method=meshing_method, af_num_parallel=num_workers)
 
 
 if __name__ == '__main__':
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     parser.add_argument('--capture_path', type=Path, required=True)
     parser.add_argument('--input_path', type=Path, required=True)
     parser.add_argument('--sessions', nargs='+', type=str, required=True)
-    parser.add_argument('--num_worksers_mesh', type=int, required=False, default=5)
+    parser.add_argument('--num_workers', type=int, required=False, default=5)
     args = parser.parse_args()
 
-    main(args.capture_path, args.sessions, args.input_path, args.num_worksers_mesh)
+    main(args.capture_path, args.sessions, args.input_path, args.num_workers)

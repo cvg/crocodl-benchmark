@@ -59,11 +59,7 @@ def run(input_file: Path,
 
     for nuc, orin in bags:
         
-        if scene != None:
-            out = nuc + '-' + scene + '.bag'
-        else:
-            out = nuc + '-ADD_SCENE.bag'
-
+        out = nuc + '-' + scene + '.bag'
         nuc = nuc + '.bag'
         orin = orin + '.bag'
 
@@ -96,6 +92,6 @@ if __name__ == '__main__':
     parser.add_argument('--output_path', type=Path, required=True, help="Path to the directory where to put merged files.")
     parser.add_argument('--nuc_path', type=Path, required=True, help="Path to the directory of the nuc bagfiles.")
     parser.add_argument('--orin_path', type=Path, required=True, help="Path to the directory of the orin bagfiles.")
-    parser.add_argument('--scene', type=str, required=False, default=None, help="Scene name, such as HYDRO.")
+    parser.add_argument('--scene', type=str, required=True, default=None, help="Scene name, such as HYDRO.")
     args = parser.parse_args().__dict__
     run(**args)

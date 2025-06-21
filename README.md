@@ -1,5 +1,9 @@
 <p align="center">
-  <h1 align="center"><img src="assets/CroCo1.png" height="250"><br>CroCoDL: Cross-device Collaborative Dataset for Localization</h1>
+    <div style="background-color: #f5f5f5; padding: 20px; border-radius: 10px;">
+      <h1 align="center"><img src="assets/CroCo1.png" height="250"></h1>
+    </div>
+    <br>
+    <h1 align="center">CroCoDL: Cross-device Collaborative Dataset for Localization</h1>
   <p align="center">
     <a href="https://hermannblum.net/">Hermann&nbsp;Blum</a><sup>1,3</sup>
     ·
@@ -78,11 +82,11 @@ chmod +x ./scripts/*
 ```
 for benchmarking dependencies only. Full package of dependencies, installed by install_all_dependencies.sh, is (in order):
 
-  1. [Ceres Solver 2.1](https://ceres-solver.googlesource.com/ceres-solver/+/refs/tags/2.1.0)
-  2. [Colmap 3.8](https://colmap.github.io/install.html)
-  3. [hloc 1.4](https://github.com/cvg/Hierarchical-Localization)
-  4. [raybender](https://github.com/cvg/raybender)
-  5. [pcdmeshing](https://github.com/cvg/pcdmeshing)
+  1. [Ceres Solver 2.1](https://ceres-solver.googlesource.com/ceres-solver/+/refs/tags/2.1.0) (processing and benchmarking)
+  2. [Colmap 3.8](https://colmap.github.io/install.html) (processing and benchmarking)
+  3. [hloc 1.4](https://github.com/cvg/Hierarchical-Localization) (processing and benchmarking)
+  4. [raybender](https://github.com/cvg/raybender) (processing)
+  5. [pcdmeshing](https://github.com/cvg/pcdmeshing) (processing)
 
 You can install these manually too using provided scripts inside ./scripts/install_{name_of_the_package}.
 
@@ -97,7 +101,6 @@ for benchmarking pipeline only. If you wish to use processing too, also run:
 python -m pip install -e .[scantools]
 ```
 
-<<<<<<< HEAD
 #### 1.1.5 Contribution dependencies:
 Lastly, if you wish to contribute run:
 
@@ -114,42 +117,112 @@ The Dockerfile provided in this project has multiple stages, two of which are:
 ```
 docker build --target scantools -t croco:scantools -f Dockerfile ./
 ```
+
 #### 1.2.2 Build the 'lamar' stage:
 ```
 docker build --target lamar -t croco:lamar -f Dockerfile ./
 ```
 
 ## 3 Functionalities
+In this section we will list available scripts and describe how to run our pipeline on both GPU and Docker. For simplicity, we will list only script you are directly running using bash scripts. To understand folder structure better, you may have a look at our [data](DATA.md) section.
+
+### 3.1 Processing pipeline
+Processing transforms raw data sessions into capture format, aligns capture sessions to ground truth scan, aligns sessions cross device, creates map and query split and finaly prunes query sessions. In the order of processing here is the list of run_{script_name}.py scripts that we are running to process data:
+
+### *Raw data to Capture format*
+  1) [`scantools/run_merge_bagfiles.py`](scantools/run_merge_bagfiles.py) - Combines Nuc and Orin bagfiles into a single, merged bagfile.  
+    Output: `{session_id}-{scene_name}.bag` for each pair of Nuc and Orin bagfiles given by the input txt file. Scene names are needed for further processing that is custom for each location.
+
+  2) [`scantools/run_spot_to_capture.py`](scantools/run_spot_to_capture.py) - Processes all merged bagfiles from a folder into a capture format spot sessions.  
+    Output: `sessions/spot_{session_id}/` capture format folder for each session in input folder.
+
+  3) [`scantools/run_phone_to_capture.py`](scantools/run_phone_to_capture.py) - Processes all raw iOS sessions into a capture format.  
+    Output: `sessions/ios_{session_id}/` capture format folder for each phone session inside input folder.
+
+  4) [`scantools/run_navvis_to_capture.py`](scantools/run_navvis_to_capture.py) - Processes given raw NavVis session into a capture format.  
+    Output: `sessions/{navvis_session_id}/` capture format folder of the NavVis scan.
+
+  5) [`scantools/run_combine_navvis_sessions.py`](scantools/run_combine_navvis_sessions.py) - Combines and aligns multiple NavVis sessions in capture format into a single NavVis session.  
+    Output: `sessions/{navvis_session_id_1}+...+{navvis_session_id_m}/` capture format folder of the combined NavVis scan.
+
+  6) [`scantools/run_meshing.py`](scantools/run_meshing.py) - Creates meshes from pointclouds of the NavVis scan. Also simplifies meshes for visualization.  
+    Output: `sessions/{navvis_session_id_1}+...+{navvis_session_id_m}/meshes/*` for the given NavVis scan in capture format.
+
+  7) [`scantools/run_rendering.py`](scantools/run_rendering.py) - Renders meshes and calculates depth maps.  
+    Output: `sessions/{navvis_session_id_1}+...+{navvis_session_id_m}/raw_data/{session_id_i}/renderer/` depth map for images of the given NavVis scan mesh.
+
+  8) [`pipelines/pipeline_scans.py`](pipelines/pipeline_scans.py) - Combines scripts 4–7 into a single pipeline for end-to-end processing of NavVis scans into capture format.  
+    Output: `sessions/{navvis_session_id_1}+...+{navvis_session_id_m}/` capture format folder of the combined NavVis scan.
+
+---
+
+### *Sessions alignment and cross-session refinement*
+  1) [`scantools/run_sequence_aligner.py`](scantools/run_sequence_aligner.py) - Aligns a given session to the ground truth NavVis scan.  
+    Output: `sessions/{session_id}/proc/` folder with alignment trajectories and `registration/{session_id}/` folders with image features, matches, and correspondences.
+
+  2) [`scantools/run_joint_refinement.py`](scantools/run_joint_refinement.py) - Refines alignment trajectory of the given sessions by co-alignment.  
+    Output: `registration/{session_id}/{covisible_session_id}/` with matches/correspondences, and updated aligned trajectories in `registration/{session_id}/trajectory_refined.txt`.
+
+  3) [`pipelines/pipeline_sequences.py`](pipelines/pipeline_sequences.py) - Combines 1 and 2 into a pipeline for aligning sessions listed in `.txt` files.  
+    Output: `sessions/{session_id}/` and `registration/{session_id}/` with alignment information.
+
+---
+
+### *Map/Query processing*
+  1) [`scantools/run_combine_sequences.py`](scantools/run_combine_sequences.py) - Combines multiple capture sessions into a single capture session.  
+    Output: `{combined_session_id}/` folder with combined sessions in capture format.
+
+  2) [`scantools/run_map_query_split_manual.py`](scantools/run_map_query_split_manual.py) - Creates map and query splits using the above and `.txt` inputs in `location/*.txt`.  
+    Output: `{combined_session_id}/` folder with map/query split in capture format for all selected devices.
+
+
+### 3.2 Benchmarking pipeline
 
 TODO:
 
-### Processing pipeline
+### 3.2 Running on GPU
+In case you are running our pipeline locally, you can use these given example bash scripts with arguments:
 
-### Running GPU
+  1) [`run_scripts/run_merge_spot.sh`](run_scripts/run_merge_spot.sh) - Runs [`scantools/run_merge_bagfiles.py`](scantools/run_merge_bagfiles.py) locally.  
+  2) [`run_scripts/run_spot_to_capture.sh`](run_scripts/run_spot_to_capture.sh) - Runs [`scantools/run_spot_to_capture.py`](scantools/run_spot_to_capture.py) locally.  
+  3) [`run_scripts/run_phone_to_capture.sh`](run_scripts/run_phone_to_capture.sh) - Runs [`scantools/run_phone_to_capture.py`](scantools/run_phone_to_capture.py) locally.  
+  4) [`run_scripts/run_process_navvis.sh`](run_scripts/run_process_navvis.sh) - Runs [`pipelines/pipeline_scans.py`](pipelines/pipeline_scans.py) locally.  
+  5) [`run_scripts/run_align_sessions.sh`](run_scripts/run_align_sessions.sh) - Runs [`pipelines/pipeline_sequences.py`](pipelines/pipeline_sequences.py) locally.  
+  6) [`run_scripts/run_map_query_split.sh`](run_scripts/run_map_query_split.sh) - Runs [`scantools/run_map_query_split_manual.py`](scantools/run_map_query_split_manual.py) locally.  
 
-### Running Docker
+---
+
+### 3.3 Running in Docker
+In case you are running our pipeline on Docker, you can use these given example bash scripts with arguments:
+
+  1) [`run_scripts/docker_run_merge_spot.sh`](run_scripts/docker_run_merge_spot.sh) - Runs [`scantools/run_merge_bagfiles.py`](scantools/run_merge_bagfiles.py) in Docker container.  
+  2) [`run_scripts/docker_run_spot_to_capture.sh`](run_scripts/docker_run_spot_to_capture.sh) - Runs [`scantools/run_spot_to_capture.py`](scantools/run_spot_to_capture.py) in Docker container.  
+  3) [`run_scripts/docker_run_phone_to_capture.sh`](run_scripts/docker_run_phone_to_capture.sh) - Runs [`scantools/run_phone_to_capture.py`](scantools/run_phone_to_capture.py) in Docker container.  
+  4) [`run_scripts/docker_run_process_navvis.sh`](run_scripts/docker_run_process_navvis.sh) - Runs [`pipelines/pipeline_scans.py`](pipelines/pipeline_scans.py) in Docker container.  
+  5) [`run_scripts/docker_run_align_sessions.sh`](run_scripts/docker_run_align_sessions.sh) - Runs [`pipelines/pipeline_sequences.py`](pipelines/pipeline_sequences.py) in Docker container.  
+  6) [`run_scripts/docker_run_map_query_split.sh`](run_scripts/docker_run_map_query_split.sh) - Runs [`scantools/run_map_query_split_manual.py`](scantools/run_map_query_split_manual.py) in Docker container.  
+
 
 ## 4 Data
 
-TODO:
-
-### 5.1 Raw Data
-
-### 5.2 Capture Data
-
-### 5.3 Dataset Overview
+If you want to read more about data we provide, and how to download it you can have a look [here](DATA.md).
 
 ## 5 CroCoDL team
 
-<p align="center">
-    <img src="assets/cvg_logo_horizontal-1.svg" alt="cvg" height="50"> &nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="assets/logo_text.svg" alt="robot" height="50"> 
-</p>
-<p align="center">
-    <img src="assets/eth_logo_kurz_pos.svg" alt="eth" height="50"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="assets/UNI_Bonn_Logo_Kompakt.jpg" alt="bonn" height="50"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="assets/Microsoft_logo_(2012).svg.png" alt="mc" height="50"> 
-</p>
+<div style="background-color: #f5f5f5; padding: 20px; border-radius: 10px;">
+
+  <p align="center">
+      <img src="assets/cvg_logo_horizontal-1.svg" alt="cvg" height="50"> &nbsp;&nbsp;&nbsp;&nbsp;
+      <img src="assets/logo_text.svg" alt="robot" height="50"> 
+  </p>
+  <p align="center">
+      <img src="assets/eth_logo_kurz_pos.svg" alt="eth" height="60"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <img src="assets/UNI_Bonn_Logo_Kompakt.jpg" alt="bonn" height="60"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <img src="assets/Microsoft_logo_(2012).svg.png" alt="mc" height="60"> 
+  </p>
+
+</div>
+
 ## BibTex citation
 
 Please consider citing our work if you use any code from this repo or ideas presented in the paper:
