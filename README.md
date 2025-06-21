@@ -1,7 +1,5 @@
 <p align="center">
-    <div style="background-color: #f5f5f5; padding: 20px; border-radius: 10px;">
-      <h1 align="center"><img src="assets/CroCo1.png" height="250"></h1>
-    </div>
+    <h1 align="center"><img src="assets/croco_white.png" height="250"></h1>
     <br>
     <h1 align="center">CroCoDL: Cross-device Collaborative Dataset for Localization</h1>
   <p align="center">
@@ -209,19 +207,7 @@ If you want to read more about data we provide, and how to download it you can h
 
 ## 5 CroCoDL team
 
-<div style="background-color: #f5f5f5; padding: 20px; border-radius: 10px;">
-
-  <p align="center">
-      <img src="assets/cvg_logo_horizontal-1.svg" alt="cvg" height="50"> &nbsp;&nbsp;&nbsp;&nbsp;
-      <img src="assets/logo_text.svg" alt="robot" height="50"> 
-  </p>
-  <p align="center">
-      <img src="assets/eth_logo_kurz_pos.svg" alt="eth" height="60"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      <img src="assets/UNI_Bonn_Logo_Kompakt.jpg" alt="bonn" height="60"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      <img src="assets/Microsoft_logo_(2012).svg.png" alt="mc" height="60"> 
-  </p>
-
-</div>
+<p align="center"> <img src="assets/croco_team.png" alt="team" height="150"> </p>
 
 ## BibTex citation
 
