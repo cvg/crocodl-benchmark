@@ -207,7 +207,7 @@ If you want to read more about data we provide, and how to download it you can h
 
 ## 5 CroCoDL team
 
-<p align="center"> <img src="assets/croco_team.png" alt="team" height="150"> </p>
+<p align="center"> <img src="assets/croco_team.png" alt="team" height="200"> </p>
 
 ## BibTex citation
 
