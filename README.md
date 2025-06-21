@@ -35,23 +35,35 @@
     <em>CroCoDL: the first dataset to contain sensor recordings from real-world robots, phones, and mixed-reality headsets, covering a total of 10 challenging locations to benchmark cross-device and human-robot visual registra- tion.</em>
 </p>
 
-##
+
+## 0 Overview
 
 This repository hosts the source code for CroCoDL, the first dataset to contain sensor recordings from real-world robots, phones, and mixed-reality headsets, covering a total of 10 challenging locations to benchmark cross-device and human-robot visual registra-tion. The contributions of this work are:
 1. The (to the best of our knowledge) largest real-world cross-device visual localization dataset, focusing on diverse capture setups and environments.
 2. A novel benchmark on cross-device visual registration that shows considerable limitations of current state-of-the-art methods.
-3. Integration of the sensor streams of Boston Dynamic’s Spot robot into LaMAR’s pseudo-GTpipeline. We will release the code for the data pre-processing and the required changes to the pipeline.
+3. Integration of the sensor streams of Boston Dynamic’s Spot robot into LaMAR’s pseudo-GTpipeline. We will release the code for the data pre-processing and the required changes to the pipeline. Here is a quick breakdown of the repository:
 
-## 0 Overview
-
-TODO:
+```
+crocodile-benchmark/                                 
+├── assets/                   # README.md images
+├── lamar/                    # Benchmarking pipeline code
+├── pipelines/                # End to end pipelines for processing data
+├── run_scripts/              # Convenience bash scripts for running pipelines
+├── scantools/                # Processing pipeline code
+├── scripts/                  # Convenience external module installation bash scripts
+├── RAW-DATA.md               # Information about raw data format
+├── CAPTURE.md                # Information about capture format
+├── DATA.md                   # Information about data release structure
+├── Dockerfile                # Docker container installation folder
+└── location_release.xlsx     # Sheet containing inormation about data release locations            
+```
 
 ## 1 Getting started
 
 Setting up of our pipeline is similar to setting up <a href="https://localizoo.com/crocodl/">Lamar</a> with added dependencies. You can choose to set it up either locally, or using docker. Local installation has been tested with:
 
 1. Ubuntu 20.04 and Cuda 12.1
-2. Ubuntu 22.03 and Cuda XX.X (lamar machine)
+2. Ubuntu 22.04 and Cuda XX.X (lamar machine)
 
 ### 1.1 Installation GPU
 
