@@ -4,7 +4,7 @@ from pathlib import Path
 from scipy.spatial.transform import Rotation as R
 from scantools.capture import Capture
 from scantools.viz.map_query import (
-    map_query_visualization
+    visualize_map_query_rotation,
 )
 from scantools import (
     run_combine_sequences, 
@@ -164,7 +164,7 @@ def rotate_trajectories(
 
         trajectories_out.append(new_line)
     
-    map_query_visualization(translation_orig, translation_new, translation_restored, capture.viz_path(), map_id)
+    visualize_map_query_rotation(translation_orig, translation_new, translation_restored, capture.viz_path(), map_id)
 
     write_csv(map_path / 'trajectories_augumented.txt', trajectories_out, col_trajectories)
     write_csv(map_path / 'transforms.txt', [[map_id] + [str(x) for x in transform]], col_transform)

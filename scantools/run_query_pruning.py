@@ -19,8 +19,8 @@ from scantools import (
 )
 
 from .viz.map_query import (
-    visualize_comparison, 
-    visualize_all
+    visualize_query_pruning_all_devices, 
+    visualize_query_pruning
 )
 
 from .utils.utils import (
@@ -155,7 +155,7 @@ def prune_cross_query(capture: Capture, sessions_data: List[Dict]):
         logger.info(f'      Saved {len(poses_pruned)} out of {len(aligned_poses)} keyframes for: {session_id}.')
         
         filename_vis = capture.viz_path() / Path(session_id + 'visualisation_query_pruning.png')
-        visualize_comparison(poses=aligned_poses, poses_pruned=poses_pruned, filename=filename_vis)
+        visualize_query_pruning(poses=aligned_poses, poses_pruned=poses_pruned, filename=filename_vis)
         logger.info(f'      Visualization saved to: {filename_vis}')
 
         filename_keys = capture.session_path(session_id) / 'proc' / 'keyframed_pruned.txt'
@@ -206,7 +206,7 @@ def subsample_queries(capture: Capture, sessions_data: List[Dict]):
         logger.info(f'      Saved {len(keys_subsampled)} out of {len(aligned_poses)} keyframes for: {session_id}.')
 
         filename_vis = capture.viz_path() / Path(session_id + 'visualisation_query_subsampling.png')
-        visualize_comparison(poses=aligned_poses, poses_pruned=poses_subsampled, filename=filename_vis)
+        visualize_query_pruning(poses=aligned_poses, poses_pruned=poses_subsampled, filename=filename_vis)
         logger.info(f'      Visualization saved to: {filename_vis}')
 
         filename_keys = capture.session_path(session_id) / 'proc' / 'keyframes_pruned_subsampled.txt'
@@ -270,11 +270,11 @@ def run(capture: Capture):
     
     save_configs(filename=capture.path / 'sessions' / 'query_pruning_config.txt')
     query_data = process_queries(capture=capture)
-    visualize_all(query_data=query_data, filename=capture.viz_path() / 'visualisation_query_original_all.png')
+    visualize_query_pruning_all_devices(query_data=query_data, filename=capture.viz_path() / 'visualisation_query_original_all.png')
     query_data_pruned = prune_cross_query(capture=capture, sessions_data=query_data)
-    visualize_all(query_data=query_data_pruned, filename=capture.viz_path() / 'visualisation_query_pruning_all.png')
+    visualize_query_pruning_all_devices(query_data=query_data_pruned, filename=capture.viz_path() / 'visualisation_query_pruning_all.png')
     query_data_subsampled = subsample_queries(capture=capture, sessions_data=query_data_pruned)
-    visualize_all(query_data=query_data_subsampled, filename=capture.viz_path() / 'visualisation_query_subsampling_all.png')
+    visualize_query_pruning_all_devices(query_data=query_data_subsampled, filename=capture.viz_path() / 'visualisation_query_subsampling_all.png')
 
     return query_data_subsampled
 

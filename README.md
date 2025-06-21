@@ -1,5 +1,5 @@
 <p align="center">
-    <h1 align="center"><img src="assets/croco_white.png" height="250"></h1>
+    <h1 align="center"><a href="https://localizoo.com/crocodl/"><img src="assets/croco_white.png" height="250"></a></h1>
     <br>
     <h1 align="center">CroCoDL: Cross-device Collaborative Dataset for Localization</h1>
   <p align="center">
@@ -9,7 +9,7 @@
     ·
     <a href="https://joshuaoreilly.com/">Joshua&nbsp;O’Reilly</a><sup>1</sup>
     ·
-    <a href="https://scholar.google.com/citations?user=Ig5T__8AAAAJ&hl=de">Tim&nbsp;Engelbracht</a><sup>1</sup>
+    <a href="https://ch.linkedin.com/in/timengelbracht/de">Tim&nbsp;Engelbracht</a><sup>1</sup>
     ·
     <a href="https://dsmn.ml/">Mihai&nbsp;Dusmanu</a><sup>2</sup>
     ·
@@ -82,12 +82,12 @@ conda activate croco
 We have used conda, however, you could also choose venv.
 
 #### 1.1.3 Install external dependencies:
-Depending on whether you would like to use exclusively benchmarking pipeline or processing pipeline, you can run:
+Depending on whether you would like to use exclusively use benchmarking pipeline or processing pipeline also, you can run:
 ```
 chmod +x ./scripts/*
 ./scripts/install_all_dependencies.sh
 ```
-for processing pipeline, or:
+for both processing and benchmarking pipelines, or:
 ```
 chmod +x ./scripts/*
 ./scripts/install_benchmarking_dependencies.sh
@@ -158,15 +158,13 @@ Processing transforms raw data sessions into capture format, aligns capture sess
     Output: `sessions/{navvis_session_id_1}+...+{navvis_session_id_m}/` capture format folder of the combined NavVis scan.
 
   6) [`scantools/run_meshing.py`](scantools/run_meshing.py) - Creates meshes from pointclouds of the NavVis scan. Also simplifies meshes for visualization.  
-    Output: `sessions/{navvis_session_id_1}+...+{navvis_session_id_m}/meshes/*` for the given NavVis scan in capture format.
+    Output: `sessions/{navvis_session_id_1}+...+{navvis_session_id_m}/proc/meshes/*` for the given NavVis scan in capture format.
 
   7) [`scantools/run_rendering.py`](scantools/run_rendering.py) - Renders meshes and calculates depth maps.  
     Output: `sessions/{navvis_session_id_1}+...+{navvis_session_id_m}/raw_data/{session_id_i}/renderer/` depth map for images of the given NavVis scan mesh.
 
   8) [`pipelines/pipeline_scans.py`](pipelines/pipeline_scans.py) - Combines scripts 4–7 into a single pipeline for end-to-end processing of NavVis scans into capture format.  
     Output: `sessions/{navvis_session_id_1}+...+{navvis_session_id_m}/` capture format folder of the combined NavVis scan.
-
----
 
 ### *Sessions alignment and cross-session refinement*
   1) [`scantools/run_sequence_aligner.py`](scantools/run_sequence_aligner.py) - Aligns a given session to the ground truth NavVis scan.  
@@ -178,7 +176,6 @@ Processing transforms raw data sessions into capture format, aligns capture sess
   3) [`pipelines/pipeline_sequences.py`](pipelines/pipeline_sequences.py) - Combines 1 and 2 into a pipeline for aligning sessions listed in `.txt` files.  
     Output: `sessions/{session_id}/` and `registration/{session_id}/` with alignment information.
 
----
 
 ### *Map/Query processing*
   1) [`scantools/run_combine_sequences.py`](scantools/run_combine_sequences.py) - Combines multiple capture sessions into a single capture session.  
@@ -202,7 +199,6 @@ In case you are running our pipeline locally, you can use these given example ba
   5) [`run_scripts/run_align_sessions.sh`](run_scripts/run_align_sessions.sh) - Runs [`pipelines/pipeline_sequences.py`](pipelines/pipeline_sequences.py) locally.  
   6) [`run_scripts/run_map_query_split.sh`](run_scripts/run_map_query_split.sh) - Runs [`scantools/run_map_query_split_manual.py`](scantools/run_map_query_split_manual.py) locally.  
 
----
 
 ### 3.3 Running in Docker
 In case you are running our pipeline on Docker, you can use these given example bash scripts with arguments:
@@ -213,6 +209,8 @@ In case you are running our pipeline on Docker, you can use these given example 
   4) [`run_scripts/docker_run_process_navvis.sh`](run_scripts/docker_run_process_navvis.sh) - Runs [`pipelines/pipeline_scans.py`](pipelines/pipeline_scans.py) in Docker container.  
   5) [`run_scripts/docker_run_align_sessions.sh`](run_scripts/docker_run_align_sessions.sh) - Runs [`pipelines/pipeline_sequences.py`](pipelines/pipeline_sequences.py) in Docker container.  
   6) [`run_scripts/docker_run_map_query_split.sh`](run_scripts/docker_run_map_query_split.sh) - Runs [`scantools/run_map_query_split_manual.py`](scantools/run_map_query_split_manual.py) in Docker container.  
+
+### 3.4 Visualization
 
 
 ## 4 Data

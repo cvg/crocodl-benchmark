@@ -1,8 +1,9 @@
 import numpy as np
-from . import logger
+from scantools import logger
 import matplotlib.pyplot as plt
 from pathlib import Path
 from typing import List, Dict
+from scipy.spatial.transform import Rotation as R
 
 def set_axes_equal(ax):
     """
@@ -30,7 +31,7 @@ def set_axes_equal(ax):
     ax.set_ylim3d([y_middle - plot_radius, y_middle + plot_radius])
     ax.set_zlim3d([z_middle - plot_radius, z_middle + plot_radius])
 
-def map_query_visualization(
+def visualize_map_query_rotation(
         translation_orig: list = [],
         translation_new: list = [],
         translation_restored: list = [],
@@ -136,12 +137,12 @@ def map_query_visualization(
     plt.close()
     logger.info(f"Saved inverse transform check visualization to {img_path_restored}")
 
-def visualize_all(
+def visualize_query_pruning_all_devices(
         query_data: List[Dict], 
         filename: Path
         ) -> None:
     """
-    Visualize all query data in a 3D scatter plot.
+    Visualize all query data in a 3D scatter plot. Intended to show pruning steps.
     Args:
         query_data: List of dictionaries containing session data with keys 'session_id', 'session', and 'keys'.
         filename: Path to save the visualization image.
@@ -179,7 +180,7 @@ def visualize_all(
 
     logger.info(f'Visualization for all queries saved to: {filename}')
 
-def visualize_comparison(
+def visualize_query_pruning(
         poses: np.array, 
         poses_pruned: np.array, 
         filename: Path
@@ -217,3 +218,94 @@ def visualize_comparison(
     plt.tight_layout()
     plt.savefig(filename, dpi=300)
     plt.close()
+
+def visualize_map_query(
+        trajectories: dict = None,
+        save_path: str = None
+        ):
+    """
+    Visualizes the trajectories of all files. 
+    Args:   
+        trajectories: dict -> Dictionary containing the session name, rotation (quaternions) and translation (xyz) of the device
+    Output:
+        None
+    """ 
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    for idx, trajectory in enumerate(trajectories):
+        translations = trajectory["translation"] 
+        quaternions = trajectory["rotation"] 
+
+        ax.view_init(elev=90, azim=-90)
+        ax.scatter(translations[:, 0], translations[:, 1], translations[:, 2], label=trajectory["session"], s=0.1)
+
+        for i in range(0, len(translations), 30):
+            pos = translations[i]
+            quat = quaternions[i]
+
+            r = R.from_quat([quat[1], quat[2], quat[3], quat[0]])
+            direction = r.apply([1, 0, 0])
+
+            ax.quiver(pos[0], pos[1], pos[2], 
+                    direction[0], direction[1], direction[2], 
+                    length=0.7, normalize=True)
+        
+        
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.legend()
+
+    # Top-down view
+    ax.view_init(elev=90, azim=-90)
+    plt.savefig(save_path, bbox_inches='tight', dpi=300)
+    plt.close()
+    logger.info(f"Figure saved to {save_path}")
+
+def visualize_map_query_matrix(
+        trajectories: list = None,
+        save_path: str = None
+        ):
+    """
+    Visualizes the trajectories in a matrix form for comparison 
+    Args:   
+        trajectories: dict -> Dictionary containing the session name, rotation (quaternions) and translation (xyz) of the device
+        args: argparse.Namespace -> Arguments passed to the script
+    Output:
+        None
+    """ 
+
+    size = int(len(trajectories) / 2)
+    fig, axes = plt.subplots(size, size, figsize=(size * 4, size * 4), subplot_kw={'projection': '3d'})
+    colors = ["#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33"]
+
+    for i in range(size):
+        for j in range(size):
+            if size == 1:
+                ax = axes
+            else:   
+                ax = axes[i, j]
+            ax.scatter(trajectories[i]["translation"][:, 0], trajectories[i]["translation"][:, 1], trajectories[i]["translation"][:, 2], label=trajectories[i]["session"], s=0.3, color=colors[0])
+            ax.scatter(trajectories[j+size]["translation"][:, 0], trajectories[j+size]["translation"][:, 1], trajectories[j+size]["translation"][:, 2], label=trajectories[j+size]["session"], s=0.3, color=colors[1])
+            ax.view_init(elev=90, azim=-90)
+            ax.set_facecolor('white')
+            ax.xaxis.pane.fill = False
+            ax.yaxis.pane.fill = False
+            ax.zaxis.pane.fill = False
+            ax.xaxis.line.set_color((1.0, 1.0, 1.0, 0.0))
+            ax.yaxis.line.set_color((1.0, 1.0, 1.0, 0.0))
+            ax.zaxis.line.set_color((1.0, 1.0, 1.0, 0.0))
+            ax.grid(False)
+            ax.set_xticks([])
+            ax.set_yticks([])
+            ax.set_zticks([])
+            ax.legend()
+
+    plt.subplots_adjust(wspace=0.05, hspace=0.05)
+
+    logger.info(f"Saving figure as: {save_path}")
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.tight_layout()
+    plt.close
+
