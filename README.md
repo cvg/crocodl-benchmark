@@ -1,5 +1,5 @@
 <p align="center">
-    <h1 align="center"><a href="https://localizoo.com/crocodl/"><img src="assets/croco_white.png" height="250"></a></h1>
+    <h1 align="center"><a href="https://localizoo.com/crocodl/"><img src="assets/croco_white.png" height="230"></a></h1>
     <br>
     <h1 align="center">CroCoDL: Cross-device Collaborative Dataset for Localization</h1>
   <p align="center">
