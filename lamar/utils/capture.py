@@ -4,7 +4,6 @@ from scantools.capture import Trajectories
 
 logger = logging.getLogger(__name__)
 
-
 def list_images_for_query_session(capture, session_id, query_keys):
     session = capture.sessions[session_id]
     image_root = capture.sessions_path()
@@ -17,8 +16,9 @@ def list_images_for_query_session(capture, session_id, query_keys):
             image_names.append(str(image_prefix / session.images[ts, sensor_id]))
         elif sensor_id in session.rigs:
             for camera_id in session.rigs[sensor_id]:
-                keys.append((ts, camera_id))
-                image_names.append(str(image_prefix / session.images[ts, camera_id]))
+                if("imu" not in camera_id and "depth" not in camera_id):
+                    keys.append((ts, camera_id))
+                    image_names.append(str(image_prefix / session.images[ts, camera_id]))
         else:
             raise ValueError(f'Sensor {sensor_id} for in sensors and rigs.')
     return keys, image_names, image_root

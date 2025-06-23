@@ -1,4 +1,5 @@
 from pathlib import Path
+import argparse
 import open3d as o3d
 
 from typing import List, Dict
@@ -21,10 +22,6 @@ from scantools import (
 from .viz.map_query import (
     visualize_query_pruning_all_devices, 
     visualize_query_pruning
-)
-
-from .utils.utils import (
-    write_csv
 )
 
 conf_matcher = {'output': 'matches-superglue',
@@ -154,14 +151,12 @@ def prune_cross_query(capture: Capture, sessions_data: List[Dict]):
         
         logger.info(f'      Saved {len(poses_pruned)} out of {len(aligned_poses)} keyframes for: {session_id}.')
         
-        filename_vis = capture.viz_path() / Path(session_id + 'visualisation_query_pruning.png')
+        filename_vis = capture.viz_path() / Path('pruning_query_pruned_' + session_id + '.png')
         visualize_query_pruning(poses=aligned_poses, poses_pruned=poses_pruned, filename=filename_vis)
         logger.info(f'      Visualization saved to: {filename_vis}')
 
         filename_keys = capture.session_path(session_id) / 'proc' / 'keyframed_pruned.txt'
-        # TODO: debug here
-        write_csv(filename_keys, ['timestamps', 'sensor_id'], query_session_pruned['keys'])
-        #save_keyframes(session=query_session_pruned, filename=filename_keys)
+        save_keyframes(session=query_session_pruned, filename=filename_keys)
         logger.info(f'      Saved keyframes to: {filename_keys}')
 
     return session_data_pruned
@@ -169,9 +164,9 @@ def prune_cross_query(capture: Capture, sessions_data: List[Dict]):
 def save_keyframes(session: Dict, filename: Path):
 
     with open(filename, 'w') as f:
-        f.write("# timestamp sensor_id\n")
+        #f.write("# timestamp sensor_id\n")
         for ts, sensor_id in session['keys']:
-            f.write(f'{ts} {sensor_id}\n')
+            f.write(f'{ts}, {sensor_id}\n')
 
     return
 
@@ -205,14 +200,12 @@ def subsample_queries(capture: Capture, sessions_data: List[Dict]):
         
         logger.info(f'      Saved {len(keys_subsampled)} out of {len(aligned_poses)} keyframes for: {session_id}.')
 
-        filename_vis = capture.viz_path() / Path(session_id + 'visualisation_query_subsampling.png')
+        filename_vis = capture.viz_path() /Path('pruning_query_subsampling_' + session_id + '.png')
         visualize_query_pruning(poses=aligned_poses, poses_pruned=poses_subsampled, filename=filename_vis)
         logger.info(f'      Visualization saved to: {filename_vis}')
 
         filename_keys = capture.session_path(session_id) / 'proc' / 'keyframes_pruned_subsampled.txt'
-        # TODO: debug here
-        write_csv(filename_keys, ['timestamps', 'sensor_id'], query_session_subsampled['keys'])
-        #save_keyframes(session=query_session_subsampled, filename=filename_keys)
+        save_keyframes(session=query_session_subsampled, filename=filename_keys)
         logger.info(f'      Saved keyframes to: {filename_keys}')
     
     return session_data_subsampled
@@ -258,25 +251,33 @@ def process_queries(capture: Capture):
         query_data.append(query_session)
         
         filename_keys = capture.session_path(session_id) / 'proc' / 'keyframes_original.txt'
-        # TODO: debug here
-        write_csv(filename_keys, ['timestamps', 'sensor_id'], query_session['keys'])
-        #save_keyframes(session=query_session, filename=filename_keys)
+        save_keyframes(session=query_session, filename=filename_keys)
         logger.info(f'      Saved keyframes to: {filename_keys}')
         logger.info(f'      Loaded {len(keys)} keyframes for: {session_id}.')
 
     return query_data
 
-def run(capture: Capture):
+def run(
+        capture: Capture
+    ):
     
-    save_configs(filename=capture.path / 'sessions' / 'query_pruning_config.txt')
+    save_configs(filename=capture.path / 'query_pruning_config.txt')
     query_data = process_queries(capture=capture)
-    visualize_query_pruning_all_devices(query_data=query_data, filename=capture.viz_path() / 'visualisation_query_original_all.png')
+    visualize_query_pruning_all_devices(query_data=query_data, filename=capture.viz_path() / 'pruning_query_original_all.png')
     query_data_pruned = prune_cross_query(capture=capture, sessions_data=query_data)
-    visualize_query_pruning_all_devices(query_data=query_data_pruned, filename=capture.viz_path() / 'visualisation_query_pruning_all.png')
+    visualize_query_pruning_all_devices(query_data=query_data_pruned, filename=capture.viz_path() / 'pruning_query_pruned_all.png')
     query_data_subsampled = subsample_queries(capture=capture, sessions_data=query_data_pruned)
-    visualize_query_pruning_all_devices(query_data=query_data_subsampled, filename=capture.viz_path() / 'visualisation_query_subsampling_all.png')
+    visualize_query_pruning_all_devices(query_data=query_data_subsampled, filename=capture.viz_path() / 'pruning_query_subsampling_all.png')
 
     return query_data_subsampled
 
-if __name__ == '__main__':
-    print("TODO")
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description="Merges sesions into query and map of at least one of ios, hl, or spot. Or any combination of them.")
+    parser.add_argument('--capture_path', type=Path, required=True, help="Where the capture is located with the merged txt files")
+
+
+    args = parser.parse_args().__dict__
+    args['capture'] = Capture.load(args.pop('capture_path'))
+    
+    run(**args)

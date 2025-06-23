@@ -26,8 +26,7 @@ def visualize_trajectories(
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
 
-    # Top-down view
-    ax.view_init(elev=90, azim=-90)
+    ax.view_init(elev=60, azim=-60)
 
     if save_path is not None:
         # Save without legend
@@ -40,9 +39,5 @@ def visualize_trajectories(
         logger.info(f"Figure saved to {save_path} (without legend)")
     else:
         logger.info("No save path provided, displaying the figure instead.")
-
-    # Show with legend
-    ax.legend()
-    plt.show()
 
     return 0

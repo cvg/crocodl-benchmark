@@ -16,44 +16,74 @@ from scantools.utils.trajectory_pose_extraction import (
 
 def run(
         capture: Capture,
-        device: str,
+        ios: bool = False,
+        hl: bool = False,
+        spot: bool = False
     ):
     """
     Main function. Visualizes all trajectories of a given device and location.
 
     Args:
         capture: Capture -> Capture object containing the session path
-        device: str -> Device prefix to visualize (choose: ios, hl, spot)
+        ios: bool -> Enable ios trajectory visual
+        hl: bool -> Enable hl trajectory visual
+        spot: bool -> Enable spot trajectory visual
     Output:
         None
     """
+    devices = []
+    if ios:
+        devices.append("ios")
+    if hl:
+        devices.append("hl")
+    if spot:
+        devices.append("spot")
 
     capture_path = capture.path
-    clean_path = capture_path.rstrip('/')
+    clean_path = str(capture_path).rstrip('/')
     location = os.path.basename(clean_path)
     base_bath = os.path.dirname(clean_path)
-    session_ids = read_sequence_list(base_bath / Path(location + "_" + device + ".txt"))
 
-    logger.info("Processing all files ...")
-    trajectories = []
-    for session_id in session_ids:
-        logger.info(f"  Reading: {session_id}")
-        trajectory = extract_pose_data(capture, session_id)
-        trajectories.append(trajectory)
-        logger.info(f"    Done reading: {session_id}")
-    logger.info("Done processing.")
+    for device in devices:
+        logger.info(f"Visualizing trajectories for device: {device}")
 
-    save_path = capture.viz_path() / f"{device}_trajectories.png"
-    visualize_trajectories(trajectories=trajectories, save_path=save_path)
+        if device == "hl":
+            suffix = "hololens"
+        elif device == "spot":
+            suffix = "spot"
+        elif device == "ios":
+            suffix = "phone"
+
+        session_ids = read_sequence_list(base_bath / Path(location + "_" + suffix + ".txt"))
+
+        logger.info("Processing all files ...")
+        trajectories = []
+        for session_id in session_ids:
+            session_id = device + "_" + session_id
+            logger.info(f"  Reading: {session_id}")
+            trajectory = extract_pose_data(capture, session_id)
+            trajectories.append(trajectory)
+            logger.info(f"  Done reading: {session_id}")
+        logger.info("Done processing.")
+
+        save_path = capture.viz_path() / f"trajectories_{device}.png"
+        visualize_trajectories(trajectories=trajectories, save_path=save_path)
+
+        logger.info(f"Visualized trajectories for device {device}.")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Given prefix plots individual sessions together.")
     parser.add_argument("--capture_path", type=Path, help="Capture path of the location to visualize trajectories.")
-    parser.add_argument("--device", choices=["ios", "hl", "spot"], type=str, 
-                        help="Prefix of the device which is visualized (choose: ios, hl, spot).")
+    parser.add_argument("--ios", action="store_true", help="Enable ios trajectory visual")
+    parser.add_argument("--hl", action="store_true", help="Enable hl trajectory visual")
+    parser.add_argument("--spot", action="store_true", help="Enable spot trajectory visual")
 
-    args = parser.parse_args()
+    args = parser.parse_args().__dict__
+    
+    if args['ios'] is False and args['spot'] is False and args['hl'] is False:
+        parser.error("At least one of --ios, --hl, or --spot is required.")
+
     args['capture'] = Capture.load(args.pop('capture_path'))
 
     run(**args)

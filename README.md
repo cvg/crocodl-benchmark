@@ -181,36 +181,79 @@ Processing transforms raw data sessions into capture format, aligns capture sess
   1) [`scantools/run_combine_sequences.py`](scantools/run_combine_sequences.py) - Combines multiple capture sessions into a single capture session.  
     Output: `{combined_session_id}/` folder with combined sessions in capture format.
 
-  2) [`scantools/run_map_query_split_manual.py`](scantools/run_map_query_split_manual.py) - Creates map and query splits using the above and `.txt` inputs in `location/*.txt`.  
-    Output: `{combined_session_id}/` folder with map/query split in capture format for all selected devices.
+  2) [`scantools/run_map_query_split_manual.py`](scantools/run_map_query_split_manual.py) - Creates map and query splits using 1 and `.txt` inputs in `location/*.txt`. Also transforms map sessions such that they are randomized.
+    Output: `{combined_session_id}/` folder with map/query split in capture format for all selected devices, transformation applied in `transformations.txt`and visualizations in `visualizations/` of all intermediate steps.
 
+  3) [`scantools/run_query_pruning.py`](scantools/run_query_pruning.py) - Prunes query trajectories of all devices such that all parts of the locations are covered in each query trajectory and subsamples them to achieve equal desnity overall.
+    Output: `{map/query_session_id}/proc/keyframes_*.txt` containing all the keyframes selected by the algorithm in each of its steps (original, after pruning annd after subsampling) and visualizations in `visualizations/` of all intermediate steps along with a configuration file `query_pruning_config.txt` used for pruning.
+
+### *Visualization*
+  1) [`scantools/run_visualize_trajectories.py`](scantools/run_visualize_trajectories.py) - Visualizes all available trajectories for selected devices.
+    Output: `visualizations/trajectory_{device}.png`.
+
+  2) [`scantools/run_visualize_map_query.py`](scantools/run_visualize_map_query.py) - Visualizes all map and query overlap for selected devices.
+    Output: `visualizations/trajectory_{device}.png`.
+
+  3) [`scantools/run_visualize_map_query_matrix.py`](scantools/run_visualize_map_query_matrix.py) - Visualizes matrix of map and query devices for all selected devices.
+    Output: `visualizations/matrix_{device_list}.png`.
 
 ### 3.2 Benchmarking pipeline
+After fully processing the pipeline and confirming with visualizations you can now run the benchmarking pipeline. In this case you can choose whether to choose original keyframes, the ones generated after pruning or the ones generated after subsampling. These could be found in the corresponding `{map/query_session_id}/proc/keyframes_*.txt`, where the start can be: `original`, `_pruned` or `_pruned_subsampled`.
 
-TODO:
+  1) [`lamar/run.py`](lamar/run.py) - Runs the benchmarking  for the given pair of map and query capture sessions.
+    Output: `benchmarking/` folder containing all intermediate data for benchmarking, features matches etc.
 
-### 3.2 Running on GPU
+### 3.3 Running on GPU
 In case you are running our pipeline locally, you can use these given example bash scripts with arguments:
 
   1) [`run_scripts/run_merge_spot.sh`](run_scripts/run_merge_spot.sh) - Runs [`scantools/run_merge_bagfiles.py`](scantools/run_merge_bagfiles.py) locally.  
-  2) [`run_scripts/run_spot_to_capture.sh`](run_scripts/run_spot_to_capture.sh) - Runs [`scantools/run_spot_to_capture.py`](scantools/run_spot_to_capture.py) locally.  
+
+  2) [`run_scripts/run_spot_to_capture.sh`](run_scripts/run_spot_to_capture.sh) - Runs [`scantools/run_spot_to_capture.py`](scantools/run_spot_to_capture.py) 
+  locally.  
+
   3) [`run_scripts/run_phone_to_capture.sh`](run_scripts/run_phone_to_capture.sh) - Runs [`scantools/run_phone_to_capture.py`](scantools/run_phone_to_capture.py) locally.  
+
   4) [`run_scripts/run_process_navvis.sh`](run_scripts/run_process_navvis.sh) - Runs [`pipelines/pipeline_scans.py`](pipelines/pipeline_scans.py) locally.  
+
   5) [`run_scripts/run_align_sessions.sh`](run_scripts/run_align_sessions.sh) - Runs [`pipelines/pipeline_sequences.py`](pipelines/pipeline_sequences.py) locally.  
+
   6) [`run_scripts/run_map_query_split.sh`](run_scripts/run_map_query_split.sh) - Runs [`scantools/run_map_query_split_manual.py`](scantools/run_map_query_split_manual.py) locally.  
 
+  7) [`run_scripts/run_query_pruning.sh`](run_scripts/run_query_pruning.sh) - Runs [`scantools/run_query_pruning.py`](scantools/run_query_pruning.py) locally.
 
-### 3.3 Running in Docker
+  8) [`scantools/run_vis_trajectories.sh`](run_scripts/run_vis_trajectories.sh) - Runs [`scantools/run_visualize_trajectories.py`](scantools/run_visualize_trajectories.py) locally.
+
+  9) [`scantools/run_vis_map_query.sh`](run_scripts/run_vis_map_query.sh) - Runs [`scantools/run_visualize_map_query.py`](scantools/run_visualize_map_query.py) locally.
+
+  10) [`scantools/run_vis_map_query_matrix.sh`](run_scripts/run_vis_map_query_matrix.sh) - Runs [`scantools/run_visualize_map_query_matrix.py`](scantools/run_visualize_map_query_matrix.py) for all device combinations locally.
+
+  11) [`scantools/run_benchmarking.sh`](run_scripts/run_benchmarking.sh) - Runs [`lamar/run.py`](lamar/run.py) locally.
+
+
+### 3.4 Running in Docker
 In case you are running our pipeline on Docker, you can use these given example bash scripts with arguments:
 
-  1) [`run_scripts/docker_run_merge_spot.sh`](run_scripts/docker_run_merge_spot.sh) - Runs [`scantools/run_merge_bagfiles.py`](scantools/run_merge_bagfiles.py) in Docker container.  
-  2) [`run_scripts/docker_run_spot_to_capture.sh`](run_scripts/docker_run_spot_to_capture.sh) - Runs [`scantools/run_spot_to_capture.py`](scantools/run_spot_to_capture.py) in Docker container.  
-  3) [`run_scripts/docker_run_phone_to_capture.sh`](run_scripts/docker_run_phone_to_capture.sh) - Runs [`scantools/run_phone_to_capture.py`](scantools/run_phone_to_capture.py) in Docker container.  
-  4) [`run_scripts/docker_run_process_navvis.sh`](run_scripts/docker_run_process_navvis.sh) - Runs [`pipelines/pipeline_scans.py`](pipelines/pipeline_scans.py) in Docker container.  
-  5) [`run_scripts/docker_run_align_sessions.sh`](run_scripts/docker_run_align_sessions.sh) - Runs [`pipelines/pipeline_sequences.py`](pipelines/pipeline_sequences.py) in Docker container.  
-  6) [`run_scripts/docker_run_map_query_split.sh`](run_scripts/docker_run_map_query_split.sh) - Runs [`scantools/run_map_query_split_manual.py`](scantools/run_map_query_split_manual.py) in Docker container.  
+  1) [`run_scripts/docker_run_merge_spot.sh`](run_scripts/docker_run_merge_spot.sh) - Runs [`scantools/run_merge_bagfiles.py`](scantools/run_merge_bagfiles.py) in a Docker container.  
 
-### 3.4 Visualization
+  2) [`run_scripts/docker_run_spot_to_capture.sh`](run_scripts/docker_run_spot_to_capture.sh) - Runs [`scantools/run_spot_to_capture.py`](scantools/run_spot_to_capture.py) in a Docker container.  
+
+  3) [`run_scripts/docker_run_phone_to_capture.sh`](run_scripts/docker_run_phone_to_capture.sh) - Runs [`scantools/run_phone_to_capture.py`](scantools/run_phone_to_capture.py) in a Docker container. 
+
+  4) [`run_scripts/docker_run_process_navvis.sh`](run_scripts/docker_run_process_navvis.sh) - Runs [`pipelines/pipeline_scans.py`](pipelines/pipeline_scans.py) in a Docker container.  
+
+  5) [`run_scripts/docker_run_align_sessions.sh`](run_scripts/docker_run_align_sessions.sh) - Runs [`pipelines/pipeline_sequences.py`](pipelines/pipeline_sequences.py) in a Docker container.  
+
+  6) [`run_scripts/docker_run_map_query_split.sh`](run_scripts/docker_run_map_query_split.sh) - Runs [`scantools/run_map_query_split_manual.py`](scantools/run_map_query_split_manual.py) in a Docker container. 
+
+  7) [`run_scripts/docker_run_query_pruning.sh`](run_scripts/docker_run_query_pruning.sh) - Runs [`scantools/run_query_pruning.py`](scantools/run_query_pruning.py) in a Docker container.
+
+  8) [`scantools/docker_run_vis_trajectories.sh`](run_scripts/docker_run_vis_trajectories.sh) - Runs [`scantools/run_visualize_trajectories.py`](scantools/run_visualize_trajectories.py) in a Docker container.
+
+  9) [`scantools/docker_run_vis_map_query.sh`](run_scripts/docker_run_vis_map_query.sh) - Runs [`scantools/run_visualize_map_query.py`](scantools/run_visualize_map_query.py) in a Docker container.
+
+  10) [`scantools/docker_run_vis_map_query_matrix.sh`](run_scripts/docker_run_vis_map_query_matrix.sh) - Runs [`scantools/run_visualize_map_query_matrix.py`](scantools/run_visualize_map_query_matrix.py) for all device combinations loin a Docker containercally.
+
+  11) [`scantools/docker_run_benchmarking.sh`](run_scripts/docker_run_benchmarking.sh) - Runs [`lamar/run.py`](lamar/run.py) in a Docker container.
 
 
 ## 4 Data

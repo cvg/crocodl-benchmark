@@ -1,17 +1,18 @@
 #!/bin/bash
 
-INPUT_PATH="/home/plukovic/research_assistant/capture/HYDRO/raw/phone"
-CAPTURE_PATH="/home/plukovic/research_assistant/capture/HYDRO"
+location="HYDRO"
+INPUT_DIR="/home/plukovic/research_assistant/capture/HYDRO/raw/phone"
+CAPTURE_DIR="/home/plukovic/research_assistant/capture/${location}/"
 
-echo "Running merge inside Docker..."
+echo "Running run_phone_to_capture on $location inside a Docker ..."
 
 docker run --rm \
-  -v "$INPUT_PATH":/data/capture_dir \
-  -v "$CAPTURE_PATH":/data/input_dir \
+  -v "$INPUT_DIR":/data/capture_dir \
+  -v "$CAPTURE_DIR":/data/capture_dir \
   croco:scantools \
   python3 -m scantools.run_phone_to_capture \
     --input_path /data/capture_dir \
     --capture_path /data/input_dir \
     #--visualize 
 
-echo "Done, run_phone_to_capture process completed!"
+echo "Done, run_phone_to_capture process completed on $location."

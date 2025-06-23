@@ -3,7 +3,7 @@
 location="HYDRO"
 CAPTURE_DIR="/home/plukovic/research_assistant/capture/${location}/"
 
-echo "Running map/query split inside Docker..."
+echo "Running run_map_query_split_manual on $location inside a Docker ..."
 
 docker run --rm \
   -v "$CAPTURE_PATH":/data/input_dir \
@@ -12,4 +12,4 @@ docker run --rm \
       --capture_path /data/input_dir \
       --iosm --iosq --hlq --hlm --spotq --spotm
 
-echo "Done, run_map_query_split_manual process completed!"
+echo "Done, run_map_query_split_manual process completed on $location."

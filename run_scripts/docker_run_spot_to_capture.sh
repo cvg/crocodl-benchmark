@@ -1,13 +1,14 @@
 #!/bin/bash
 
-INPUT_PATH="/home/plukovic/research_assistant/capture/HYDRO/raw/phone"
-CAPTURE_PATH="/home/plukovic/research_assistant/capture/HYDRO"
+location="HYDRO"
+INPUT_DIR="/home/plukovic/research_assistant/capture/HYDRO/raw/phone"
+CAPTURE_DIR="/home/plukovic/research_assistant/capture/${location}/"
 
-echo "Running inside Docker..."
+echo "Running run_spot_to_capture on $location inside a Docker ..."
 
 docker run --rm \
-  -v "$INPUT_PATH":/data/input_dir \
-  -v "$CAPTURE_PATH":/data/output_dir \
+  -v "$INPUT_DIR":/data/input_dir \
+  -v "$CAPTURE_DIR":/data/output_dir \
   croco:scantools \
   python3 -m scantools.run_spot_to_capture \
     --input_path /data/input_dir \
@@ -15,4 +16,4 @@ docker run --rm \
     --overwrite
     # --all_cameras
 
-echo "Done, run_spot_to_capture.py process completed!"
+echo "Done, run_spot_to_capture.py process completed on $location."

@@ -33,6 +33,14 @@ class FeatureMatching:
                 },
             },
         },
+        'lightglue': {
+            'name': 'lightglue',
+            'hloc': {
+                'model': {
+                    'name': 'lightglue',
+                },
+            },
+        },
         'mnn': {
             'name': 'mnn',
             'hloc': {

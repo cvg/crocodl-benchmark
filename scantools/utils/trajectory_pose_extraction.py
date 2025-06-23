@@ -3,6 +3,7 @@ from pathlib import Path
 from scantools.capture import Capture
 from scantools import logger
 from scantools.utils.utils import read_csv
+from scantools.utils.io import read_sequence_list
 
 def read_pose_data(
         capture: Capture,
@@ -124,8 +125,11 @@ def read_map_query_trajectories(
     session_ids_map = capture.path / Path(device + "_map.txt")
     session_ids_query = capture.path / Path(device + "_query.txt")
 
-    map_trajectory = extract_pose_data_map_query(capture, device + "_map", session_ids_map)
-    query_trajectory = extract_pose_data_map_query(capture, device + "_query", session_ids_query)
+    session_ids = read_sequence_list(session_ids_map)
+    map_trajectory = extract_pose_data_map_query(capture, device + "_map", session_ids)
+
+    session_ids = read_sequence_list(session_ids_query)
+    query_trajectory = extract_pose_data_map_query(capture, device + "_query", session_ids)
 
     return {
         "map": map_trajectory,

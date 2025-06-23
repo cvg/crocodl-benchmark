@@ -14,7 +14,6 @@ from .utils.capture import (
 
 from . import logger
 
-
 def run(outputs: Path,
         capture: Capture,
         ref_id: str,
@@ -30,7 +29,7 @@ def run(outputs: Path,
         retrieval_mapping: Optional[str] = None,
         filter_pairs_mapping: Optional[Dict] = None,
         do_rig: bool = True,
-        query_filename: str = 'queries.txt'):
+        query_filename: str = 'keyframes_original.txt'):
 
     if matcher_query is None:
         matcher_query = matcher
@@ -75,7 +74,7 @@ def run(outputs: Path,
             'filter_pose': {'do': True, 'num_pairs_filter': 250},
         })
 
-    query_list_path = capture.session_path(query_id) / query_filename
+    query_list_path = capture.session_path(query_id) / 'proc' / query_filename
     query_list = image_keys = read_query_list(query_list_path)
     if is_rig and not do_rig:
         rig_query_list = query_list

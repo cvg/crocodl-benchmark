@@ -174,7 +174,8 @@ def rotate_trajectories(
 def process_map_or_query(
         device: str = "",
         capture: Capture = None,
-        map_or_query: str = ""
+        map_or_query: str = "",
+        transform: bool = False
     ) -> None:
     """
     Process map or query for file_path given.
@@ -212,7 +213,7 @@ def process_map_or_query(
             capture, sessions_id, output_id, overwrite_poses=overwrite_poses,
             keyframing=keyframing_conf)
     
-    if map_or_query == "map":
+    if transform and map_or_query == "map":
         rotate_trajectories(capture, output_id)
 
     logger.info(f"Done merging {map_or_query} for {device}.\n")
@@ -225,7 +226,8 @@ def run(capture: Capture,
         spotq: bool = False,
         iosm: bool = False,
         hlm: bool = False,
-        spotm: bool = False):
+        spotm: bool = False,
+        transform: bool = False):
     """
     Run function. Merges sessions into query or map for devices given.
 
@@ -238,27 +240,27 @@ def run(capture: Capture,
     if iosq:
         map_or_query = "query"
         device = "ios"
-        sessions_ios_q = process_map_or_query(device, capture, map_or_query)
+        sessions_ios_q = process_map_or_query(device, capture, map_or_query, transform)
     if hlq:
         map_or_query = "query"
         device = "hl"
-        sessions_hl_q = process_map_or_query(device, capture, map_or_query)
+        sessions_hl_q = process_map_or_query(device, capture, map_or_query, transform)
     if spotq:
         map_or_query = "query"
         device = "spot"
-        sessions_spot_q = process_map_or_query(device, capture, map_or_query)
+        sessions_spot_q = process_map_or_query(device, capture, map_or_query, transform)
     if iosm:
         map_or_query = "map"
         device = "ios"
-        sessions_ios_m = process_map_or_query(device, capture, map_or_query)
+        sessions_ios_m = process_map_or_query(device, capture, map_or_query, transform)
     if hlm:
         map_or_query = "map"
         device = "hl"
-        sessions_hl_m = process_map_or_query(device, capture, map_or_query)
+        sessions_hl_m = process_map_or_query(device, capture, map_or_query, transform)
     if spotm:
         map_or_query = "map"
         device = "spot"
-        sessions_spot_m = process_map_or_query(device, capture, map_or_query)
+        sessions_spot_m = process_map_or_query(device, capture, map_or_query, transform)
 
 if __name__ == "__main__":
 
@@ -270,6 +272,7 @@ if __name__ == "__main__":
     parser.add_argument("--iosm", action="store_true", help="Enable iOS map map merge")
     parser.add_argument("--hlm", action="store_true", help="Enable HL map map merge")
     parser.add_argument("--spotm", action="store_true", help="Enable Spot map map merge")
+    parser.add_argument("--transform", action="store_true", help="Enable transformation of trajectories for map")
     
     args = parser.parse_args()
     
@@ -277,7 +280,7 @@ if __name__ == "__main__":
     if not (args.iosq or args.hlq or args.spotq or args.iosm or args.hlm or args.spotm):
         parser.error("At least one of --iosq, --hlq, --spotq, --iosm, --hlm, --spotm must be specified.")
 
-    capture = Capture.load(args.capture_path)
-
+    args = parser.parse_args().__dict__
+    args['capture'] = Capture.load(args.pop('capture_path'))
     run(**args)
     

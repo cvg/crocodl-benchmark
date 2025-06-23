@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from scantools import logger
 import matplotlib.pyplot as plt
@@ -71,7 +72,8 @@ def visualize_map_query_rotation(
     set_axes_equal(ax)
     ax.grid(True)
 
-    img_path_orig = visualization_path / Path(map_id + 'trajectory_original_topdown.png')
+    img_path_orig = visualization_path / Path('trajectory_original_' + map_id + '.png')
+    os.makedirs(os.path.dirname(img_path_orig), exist_ok=True)
     plt.savefig(img_path_orig)
     plt.close()
     logger.info(f"Saved original trajectory to {img_path_orig}")
@@ -88,7 +90,8 @@ def visualize_map_query_rotation(
     set_axes_equal(ax)
     ax.grid(True)
 
-    img_path_new = visualization_path / Path(map_id + 'trajectory_transformed_topdown.png')
+    img_path_new = visualization_path / Path('trajectory_transformed_' + map_id + '.png')
+    os.makedirs(os.path.dirname(img_path_new), exist_ok=True)
     plt.savefig(img_path_new)
     plt.close()
     logger.info(f"Saved transformed trajectory to {img_path_new}")
@@ -99,7 +102,7 @@ def visualize_map_query_rotation(
     ax.scatter(*translation_orig.T, c='blue', label='Original', alpha=0.6)
     ax.scatter(*translation_new.T, c='red', label='Transformed', alpha=0.6)
 
-    ax.set_title(f"Trajectory Transform Visualization: {map_id}")
+    ax.set_title(f"Trajectory transformation comparison visualization: {map_id}")
     ax.set_xlabel("X")
     ax.set_ylabel("Y")
     ax.set_zlabel("Z")
@@ -109,7 +112,8 @@ def visualize_map_query_rotation(
     set_axes_equal(ax)
     ax.grid(True)
 
-    img_path = visualization_path / Path(map_id + 'trajectory_transform.png')
+    img_path = visualization_path / Path('trajectory_transformation_comparison_' + map_id + '.png')
+    os.makedirs(os.path.dirname(img_path), exist_ok=True)
     plt.savefig(img_path)
     plt.close()
     logger.info(f"Saved trajectory visualization to {img_path}")
@@ -123,7 +127,7 @@ def visualize_map_query_rotation(
     for o, r in zip(translation_orig, translation_restored):
         ax.plot([o[0], r[0]], [o[1], r[1]], [o[2], r[2]], c='gray', alpha=0.3)
 
-    ax.set_title(f"Inverse Transform Check: {map_id}")
+    ax.set_title(f"Inverse Transform: {map_id}")
     ax.set_xlabel("X")
     ax.set_ylabel("Y")
     ax.set_zlabel("Z")
@@ -132,7 +136,8 @@ def visualize_map_query_rotation(
     set_axes_equal(ax)
     ax.grid(True)
 
-    img_path_restored = visualization_path / Path(map_id + 'trajectory_inverse_transform.png')
+    img_path_restored = visualization_path / Path('trajectory_inverse_transform_' + map_id +'.png')
+    os.makedirs(os.path.dirname(img_path_restored), exist_ok=True)
     plt.savefig(img_path_restored)
     plt.close()
     logger.info(f"Saved inverse transform check visualization to {img_path_restored}")
@@ -175,6 +180,7 @@ def visualize_query_pruning_all_devices(
 
     ax.legend()
     plt.tight_layout()
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
     plt.savefig(filename, dpi=300)
     plt.close()
 
@@ -216,6 +222,7 @@ def visualize_query_pruning(
     ax2.grid(True)
 
     plt.tight_layout()
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
     plt.savefig(filename, dpi=300)
     plt.close()
 
@@ -227,13 +234,14 @@ def visualize_map_query(
     Visualizes the trajectories of all files. 
     Args:   
         trajectories: dict -> Dictionary containing the session name, rotation (quaternions) and translation (xyz) of the device
+        save_path: str -> Path to save the visualization image
     Output:
         None
     """ 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
-    for idx, trajectory in enumerate(trajectories):
+    for trajectory in trajectories:
         translations = trajectory["translation"] 
         quaternions = trajectory["rotation"] 
 
@@ -259,6 +267,7 @@ def visualize_map_query(
 
     # Top-down view
     ax.view_init(elev=90, azim=-90)
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
     plt.savefig(save_path, bbox_inches='tight', dpi=300)
     plt.close()
     logger.info(f"Figure saved to {save_path}")
@@ -271,7 +280,7 @@ def visualize_map_query_matrix(
     Visualizes the trajectories in a matrix form for comparison 
     Args:   
         trajectories: dict -> Dictionary containing the session name, rotation (quaternions) and translation (xyz) of the device
-        args: argparse.Namespace -> Arguments passed to the script
+        sace_path: str -> Path to save the visualization image
     Output:
         None
     """ 
@@ -282,12 +291,9 @@ def visualize_map_query_matrix(
 
     for i in range(size):
         for j in range(size):
-            if size == 1:
-                ax = axes
-            else:   
-                ax = axes[i, j]
-            ax.scatter(trajectories[i]["translation"][:, 0], trajectories[i]["translation"][:, 1], trajectories[i]["translation"][:, 2], label=trajectories[i]["session"], s=0.3, color=colors[0])
-            ax.scatter(trajectories[j+size]["translation"][:, 0], trajectories[j+size]["translation"][:, 1], trajectories[j+size]["translation"][:, 2], label=trajectories[j+size]["session"], s=0.3, color=colors[1])
+            ax = axes[i, j]
+            ax.scatter(trajectories[i*2]["translation"][:, 0], trajectories[i*2]["translation"][:, 1], trajectories[i*2]["translation"][:, 2], label=trajectories[i*2]["session"], s=0.3, color=colors[0])
+            ax.scatter(trajectories[j*2+1]["translation"][:, 0], trajectories[j*2+1]["translation"][:, 1], trajectories[j*2+1]["translation"][:, 2], label=trajectories[j*2+1]["session"], s=0.3, color=colors[1])
             ax.view_init(elev=90, azim=-90)
             ax.set_facecolor('white')
             ax.xaxis.pane.fill = False
@@ -305,6 +311,7 @@ def visualize_map_query_matrix(
     plt.subplots_adjust(wspace=0.05, hspace=0.05)
 
     logger.info(f"Saving figure as: {save_path}")
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.tight_layout()
     plt.close

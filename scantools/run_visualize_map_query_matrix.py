@@ -9,6 +9,7 @@ from scantools.run_visualize_map_query import (
 from scantools.viz.map_query import (
     visualize_map_query_matrix
 )
+
 def run(
         capture: Capture,
         ios: bool = False,
@@ -16,7 +17,7 @@ def run(
         spot: bool = False,
     ):
     """
-    Main function. Visualizes query and map of at least one of ios, hl, or spot. Or any combination of them.
+    Main function. Visualizes query and map of at least two of ios, hl, or spot. Or any combination of them.
     This function reads the trajectories for the specified devices and visualizes them in a matrix format.
     It requires at least two devices to be specified (ios, hl, spot).
 
@@ -30,22 +31,22 @@ def run(
     """
 
     devices = []
-    filename = ""
+    filename = "matrix"
     if ios:
         devices.append("ios")
-        filename += "ios_"
+        filename += "_ios"
     if hl:
         devices.append("hl")
-        filename += "hl_"
+        filename += "_hl"
     if spot:
         devices.append("spot")
-        filename += "spot_"
+        filename += "_spot"
 
-    filename += "map_query_matrix.png"
+    filename += ".png"
+    trajectories = []
 
     for device in devices:
         map_query_trajectories = read_map_query_trajectories(capture, device)
-        trajectories = []
         trajectories.append(map_query_trajectories['map'])
         trajectories.append(map_query_trajectories['query'])
 
@@ -67,13 +68,10 @@ if __name__ == "__main__":
     if enabled < 2:
         parser.error("At least two of --ios, --hl, or --spot must be specified.")
 
-    if not args.scene_name:
-        parser.error("Scene name must be specified.")
-
     if args.ios is False and args.hl is False and args.spot is False:
         parser.error("At least one of --ios, --hl, or --spot is required.")
 
-    args = parser.parse_args()
+    args = parser.parse_args().__dict__
     args['capture'] = Capture.load(args.pop('capture_path'))
 
     run(**args)

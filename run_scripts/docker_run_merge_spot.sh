@@ -1,21 +1,19 @@
 #!/bin/bash
 
-# Define host-side paths
-NUC_PATH="/home/plukovic/research_assistant/capture/HYDRO/raw/spot/nuc"
-ORIN_PATH="/home/plukovic/research_assistant/capture/HYDRO/raw/spot/orin"
-OUTPUT_PATH="/home/plukovic/research_assistant/capture/HYDRO/raw/spot/merged"
+NUC_DIR="/home/plukovic/research_assistant/capture/HYDRO/raw/spot/nuc"
+ORIN_DIR="/home/plukovic/research_assistant/capture/HYDRO/raw/spot/orin"
+OUTPUT_DIR="/home/plukovic/research_assistant/capture/HYDRO/raw/spot/merged"
 INPUT_FILE="/home/plukovic/research_assistant/capture/HYDRO/raw/spot/spot_sessions_to_merge.txt"
-SCENE="HYDRO"
+location="HYDRO"
 
-# Ensure output path exists on host
 mkdir -p "$OUTPUT_PATH"
 
-echo "Running merge inside Docker..."
+echo "Running run_merge_bagfiles on $location inside a Docker ..."
 
 docker run --rm \
-  -v "$NUC_PATH":/data/nuc_dir \
-  -v "$ORIN_PATH":/data/orin_dir \
-  -v "$OUTPUT_PATH":/data/merged_dir \
+  -v "$NUC_DIR":/data/nuc_dir \
+  -v "$ORIN_DIR":/data/orin_dir \
+  -v "$OUTPUT_DIR":/data/merged_dir \
   -v "$INPUT_FILE":/data/input.txt \
   croco:scantools \
   python3 -m scantools.run_merge_bagfiles \
@@ -23,6 +21,6 @@ docker run --rm \
     --output_path /data/merged_dir \
     --nuc_path /data/nuc_dir \
     --orin_path /data/orin_dir \
-    --scene "$SCENE"
+    --scene "$location"
 
-echo "Merge complete!"
+echo "Done, run_merge_bagfiles process complete on $location."
