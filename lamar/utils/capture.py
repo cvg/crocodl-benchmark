@@ -21,6 +21,9 @@ def list_images_for_query_session(capture, session_id, query_keys):
                     image_names.append(str(image_prefix / session.images[ts, camera_id]))
         else:
             raise ValueError(f'Sensor {sensor_id} for in sensors and rigs.')
+        
+    logger.info(f"Extracted {len(keys)} keys and {len(image_names)} images for session {session_id}.")
+
     return keys, image_names, image_root
 
 
@@ -33,6 +36,7 @@ def list_images_for_session(capture, session_id, query_keys=None):
     keys = sorted(session.images.key_pairs())
     image_names = [str(image_prefix / session.images[k]) for k in keys]
     # cams = [k[1] for k in keys]
+    logger.info(f"Extracted {len(keys)} keys and {len(image_names)} images for session {session_id}.")
     return keys, image_names, image_root
 
 

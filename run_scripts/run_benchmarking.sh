@@ -4,7 +4,7 @@ location="HYDRO"
 CAPTURE_DIR="/home/plukovic/research_assistant/capture/${location}/"
 OUTPUT="${CAPTURE_DIR}/benchmarking"
 
-devices=(spot ios hl)
+devices=(ios spot hl)
 
 echo "Starting benchmarking for scene: $location"
 
@@ -19,8 +19,10 @@ for ref in "${devices[@]}"; do
       --feature superpoint \
       --matcher lightglue \
       --capture "$CAPTURE_DIR" \
-      --outputs "$OUTPUT"
+      --outputs "$OUTPUT" \
+      --query_filename "keyframes_original.txt"
     echo "Benchmarking completed for ref_id=${ref}_map and query_id=${query}_query"
+    echo ""
   done
 done
 
