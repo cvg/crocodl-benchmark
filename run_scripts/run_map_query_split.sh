@@ -7,6 +7,7 @@ echo "Running run_map_query_split_manual on $location ..."
 
 python -m scantools.run_map_query_split_manual \
       --capture_path "$CAPTURE_DIR" \
-      --iosm --iosq --hlq --hlm --spotq --spotm
+      --iosm --iosq --hlq --hlm --spotq --spotm \
+      --transform
   
 echo "Done, run_map_query_split_manual process completed on $location."

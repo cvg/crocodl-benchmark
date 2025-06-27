@@ -16,7 +16,6 @@ def run(session_path : Path, overwrite : bool):
         queries.append([line[0], line[1]])
     write_csv(session_path / 'queries.txt', queries, None)
 
-
 if __name__ == '__main__':
     logging.getLogger().setLevel(logging.INFO)
     parser = argparse.ArgumentParser()

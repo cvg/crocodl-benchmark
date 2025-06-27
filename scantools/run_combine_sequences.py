@@ -188,8 +188,6 @@ def run(capture: Capture,
             dst_path.symlink_to(
                 osp.relpath(capture.proc_path(reference_id) / mesh_subpath, dst_path.parent))
 
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--capture_path', type=Path, required=True)

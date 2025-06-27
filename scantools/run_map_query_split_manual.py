@@ -1,3 +1,5 @@
+import os
+import shutil
 import argparse
 import numpy as np
 from pathlib import Path
@@ -8,11 +10,8 @@ from scantools.viz.map_query import (
 )
 from scantools import (
     run_combine_sequences, 
-    run_sequence_aligner,
     )
-from scantools.proc.alignment.image_matching import (
-    KeyFramingConf
-)
+
 from . import logger
 from scantools.utils.utils import (
     read_csv, 
@@ -21,6 +20,11 @@ from scantools.utils.utils import (
 from scantools.utils.io import (
     read_sequence_list
 )
+
+from pipelines.pipeline_sequence import *
+
+eval_keyframing = run_combine_sequences.KeyFramingConf()
+map_keyframing = run_combine_sequences.KeyFramingConf(max_distance=0.5, max_elapsed=0.4)
 
 def generate_random_transform_6DOF():
     """
@@ -199,18 +203,34 @@ def process_map_or_query(
 
     if map_or_query == "map":
         overwrite_poses = True
+        keyframing_conf = map_keyframing
+        capture_path = capture.path
+        clean_path = str(capture_path).rstrip('/')
+        base_path = Path(os.path.dirname(clean_path))
+        location = os.path.basename(clean_path)
+        ref_id, _, _, _ = eval('get_data_' + location)(base_path)
+
     elif map_or_query == "query":                    
         overwrite_poses = False
+        keyframing_conf = eval_keyframing
+        ref_id = None
 
-    if device == "ios":
-        keyframing_conf = KeyFramingConf()
-    elif device == "hl":
-        keyframing_conf = KeyFramingConf(**run_sequence_aligner.conf_hololens["localizer"]["keyframing"])
-    elif device == "spot":          
-        keyframing_conf = KeyFramingConf()
+    logger.info(f"Overwrite poses: {overwrite_poses}.")
+    logger.info(f"Keyframing conf: {keyframing_conf}.")
+    logger.info(f"Reference id: {ref_id}.")
+
+    combined_session_path = capture.sessions_path() / output_id
+
+    if os.path.exists(combined_session_path) and os.path.isdir(combined_session_path):
+        shutil.rmtree(combined_session_path)
+        logger.info(f"Combined session {combined_session_path} already exists, Deleting.")
 
     run_combine_sequences.run(
-            capture, sessions_id, output_id, overwrite_poses=overwrite_poses,
+            capture, 
+            sessions_id, 
+            output_id, 
+            overwrite_poses=overwrite_poses, 
+            reference_id=ref_id,
             keyframing=keyframing_conf)
     
     if transform and map_or_query == "map":

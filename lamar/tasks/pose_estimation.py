@@ -37,7 +37,6 @@ class PoseEstimationPaths:
         self.poses = self.workdir / 'poses.txt'
         self.config = self.workdir / 'configuration.json'
 
-
 def rig_to_image_trajectory(T_c2w_rig: Trajectories, rigs: Rigs):
     T_c2w_image = Trajectories()
     for ts, rig_id in T_c2w_rig.key_pairs():
@@ -201,7 +200,7 @@ class RigPoseEstimation(PoseEstimation):
             key = keys[idx]
             ts, rig_id = key
             rig = session.rigs[rig_id]
-            query_keys = [(ts, camera_id) for camera_id in rig]
+            query_keys = [(ts, camera_id) for camera_id in rig if "imu" not in camera_id and "depth" not in camera_id]
             query_names = [str(prefix / session.images[k]) for k in query_keys]
             ref_key_names = [
                 get_retrieval(key, retrieval, self.ref_id, capture) for key in query_keys]

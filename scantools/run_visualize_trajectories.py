@@ -42,7 +42,7 @@ def run(
     capture_path = capture.path
     clean_path = str(capture_path).rstrip('/')
     location = os.path.basename(clean_path)
-    base_bath = os.path.dirname(clean_path)
+    base_path = os.path.dirname(clean_path)
 
     for device in devices:
         logger.info(f"Visualizing trajectories for device: {device}")
@@ -54,7 +54,7 @@ def run(
         elif device == "ios":
             suffix = "phone"
 
-        session_ids = read_sequence_list(base_bath / Path(location + "_" + suffix + ".txt"))
+        session_ids = read_sequence_list(base_path / Path(location + "_" + suffix + ".txt"))
 
         logger.info("Processing all files ...")
         trajectories = []

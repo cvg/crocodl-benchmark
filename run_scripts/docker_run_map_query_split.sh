@@ -10,6 +10,7 @@ docker run --rm \
   croco:scantools \
   python3 -m scantools.run_map_query_split_manual \
       --capture_path /data/input_dir \
-      --iosm --iosq --hlq --hlm --spotq --spotm
+      --iosm --iosq --hlq --hlm --spotq --spotm \
+      --transform
 
 echo "Done, run_map_query_split_manual process completed on $location."

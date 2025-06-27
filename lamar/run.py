@@ -129,7 +129,6 @@ def run(outputs: Path,
 
     return results
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--scene', type=str, required=True)
