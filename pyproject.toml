@@ -46,6 +46,8 @@ scantools = [
     "bagpy==0.5",
     "rospkg==1.6.0",
     "pyqaternion==0.9.9",
+    "jupyter_compare_view==0.2.4", 
+    "ipykernel==6.29.5",
 ]
 
 dev = [
