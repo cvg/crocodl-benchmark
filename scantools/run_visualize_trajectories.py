@@ -66,7 +66,7 @@ def run(
             logger.info(f"  Done reading: {session_id}")
         logger.info("Done processing.")
 
-        save_path = capture.viz_path() / f"trajectories_{device}.png"
+        save_path = capture.viz_path() / Path('trajectories') / Path(f"trajectories_{device}.png")
         visualize_trajectories(trajectories=trajectories, save_path=save_path)
 
         logger.info(f"Visualized trajectories for device {device}.")

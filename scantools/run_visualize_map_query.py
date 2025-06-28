@@ -44,7 +44,7 @@ def run(
         trajectories.append(map_query_trajectories['map'])
         trajectories.append(map_query_trajectories['query'])
 
-        save_path = capture.viz_path() / f"map_query_{device}.png"
+        save_path = capture.viz_path() / Path('map_query') / Path(f"map_query_{device}.png")
         visualize_map_query(trajectories=trajectories, save_path=save_path)
 
         logger.info(f"Map query visualization for {device} done.")

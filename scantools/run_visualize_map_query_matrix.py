@@ -51,7 +51,7 @@ def run(
         trajectories.append(map_query_trajectories['query'])
 
     print("Visualizing split ...")
-    visualize_map_query_matrix(trajectories, capture.viz_path() / filename)
+    visualize_map_query_matrix(trajectories, capture.viz_path() / Path('map_query') / Path(filename))
     print("Visualizing ended.")
     
 if __name__ == "__main__":

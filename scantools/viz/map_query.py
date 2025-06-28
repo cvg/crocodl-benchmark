@@ -90,7 +90,7 @@ def visualize_map_query_rotation(
     set_axes_equal(ax)
     ax.grid(True)
 
-    img_path_new = visualization_path / Path('trajectory_transformed_' + map_id + '.png')
+    img_path_new = visualization_path / Path('map_query') / Path('trajectory_transformed_' + map_id + '.png')
     os.makedirs(os.path.dirname(img_path_new), exist_ok=True)
     plt.savefig(img_path_new)
     plt.close()
@@ -112,7 +112,7 @@ def visualize_map_query_rotation(
     set_axes_equal(ax)
     ax.grid(True)
 
-    img_path = visualization_path / Path('trajectory_transformation_comparison_' + map_id + '.png')
+    img_path = visualization_path / Path('map_query') / Path('trajectory_transformation_comparison_' + map_id + '.png')
     os.makedirs(os.path.dirname(img_path), exist_ok=True)
     plt.savefig(img_path)
     plt.close()
@@ -136,7 +136,7 @@ def visualize_map_query_rotation(
     set_axes_equal(ax)
     ax.grid(True)
 
-    img_path_restored = visualization_path / Path('trajectory_inverse_transform_' + map_id +'.png')
+    img_path_restored = visualization_path / Path('map_query') / Path('trajectory_inverse_transform_' + map_id +'.png')
     os.makedirs(os.path.dirname(img_path_restored), exist_ok=True)
     plt.savefig(img_path_restored)
     plt.close()
