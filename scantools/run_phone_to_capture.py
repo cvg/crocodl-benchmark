@@ -381,6 +381,10 @@ def run(input_path: Path,
         visualize: bool = False,
         downsample_framerate: Optional[float] = 5,
         split_sequence_on_failure: bool = True):
+    
+    """
+    Transforms every raw phone session in inpput_path and transforms it into phone capture session inside capture.sessions_path().
+    """
 
     sessions = [
         (Path(name), "ios_" + name) for name in os.listdir(input_path)

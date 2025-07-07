@@ -189,13 +189,16 @@ Processing transforms raw data sessions into capture format, aligns capture sess
 
 ### *Visualization*
   1) [`scantools/run_visualize_trajectories.py`](scantools/run_visualize_trajectories.py) - Visualizes all available trajectories for selected devices.
-    Output: `visualizations/trajectory_{device}.png`.
+    Output: `visualizations/trajectories/trajectory_{device}.png`.
 
   2) [`scantools/run_visualize_map_query.py`](scantools/run_visualize_map_query.py) - Visualizes all map and query overlap for selected devices.
-    Output: `visualizations/trajectory_{device}.png`.
+    Output: `visualizations/map_query/trajectory_{device}.png`.
 
   3) [`scantools/run_visualize_map_query_matrix.py`](scantools/run_visualize_map_query_matrix.py) - Visualizes matrix of map and query devices for all selected devices.
-    Output: `visualizations/matrix_{device_list}.png`.
+    Output: `visualizations/map_query/matrix_{device_list}.png`.
+
+  4) [`scantools/run_visualize_map_query_renders.py`](scantools/run_visualize_map_query_renders.py) - Visualizes comparison of renders and raw images in all map/query session that are avialable. It also saves a video of these images stiched together.
+    Output: `visualizations/renders/{device}_{map/query}/*png` and `visualizations/render_videos/{device}_{map/query}.mp4`
 
 ### 3.2 Benchmarking pipeline
 After fully processing the pipeline and confirming with visualizations you can now run the benchmarking pipeline. In this case you can choose whether to choose original keyframes, the ones generated after pruning or the ones generated after subsampling. These could be found in the corresponding `{map/query_session_id}/proc/keyframes_*.txt`, where the start can be: `original`, `_pruned` or `_pruned_subsampled`.
@@ -227,7 +230,9 @@ In case you are running our pipeline locally, you can use these given example ba
 
   10) [`scantools/run_vis_map_query_matrix.sh`](run_scripts/run_vis_map_query_matrix.sh) - Runs [`scantools/run_visualize_map_query_matrix.py`](scantools/run_visualize_map_query_matrix.py) for all device combinations locally.
 
-  11) [`scantools/run_benchmarking.sh`](run_scripts/run_benchmarking.sh) - Runs [`lamar/run.py`](lamar/run.py) locally.
+  11) [`scantools/run_vis_map_query_renders.sh`](run_scripts/run_vis_map_query_renders.sh) - Runs [`scantools/run_visualize_map_query_renders.py`](scantools/run_visualize_map_query_renders.py) for all available map/query sessions locally.
+
+  12) [`scantools/run_benchmarking.sh`](run_scripts/run_benchmarking.sh) - Runs [`lamar/run.py`](lamar/run.py) locally.
 
 
 ### 3.4 Running in Docker
@@ -253,8 +258,9 @@ In case you are running our pipeline on Docker, you can use these given example 
 
   10) [`scantools/docker_run_vis_map_query_matrix.sh`](run_scripts/docker_run_vis_map_query_matrix.sh) - Runs [`scantools/run_visualize_map_query_matrix.py`](scantools/run_visualize_map_query_matrix.py) for all device combinations loin a Docker containercally.
 
-  11) [`scantools/docker_run_benchmarking.sh`](run_scripts/docker_run_benchmarking.sh) - Runs [`lamar/run.py`](lamar/run.py) in a Docker container.
+  11) [`scantools/docker_run_vis_map_query_renders.sh`](run_scripts/run_vis_map_query_renders.sh) - Runs [`scantools/run_visualize_map_query_renders.py`](scantools/run_visualize_map_query_renders.py) for all available map/query sessions in a Docker container.
 
+  12) [`scantools/docker_run_benchmarking.sh`](run_scripts/run_benchmarking.sh) - Runs [`lamar/run.py`](lamar/run.py) in a Docker container.
 
 ## 4 Data
 

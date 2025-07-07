@@ -49,8 +49,6 @@ def visualize_map_query_rotation(
         translation_restored: List of restored trajectory translations after inverse transformation.
         visualization_path: Path to save the visualizations.
         map_id: Identifier for the map being visualized.
-    Returns:
-        None
     """
 
     # ---------- Visualization ----------
@@ -72,7 +70,7 @@ def visualize_map_query_rotation(
     set_axes_equal(ax)
     ax.grid(True)
 
-    img_path_orig = visualization_path / Path('trajectory_original_' + map_id + '.png')
+    img_path_orig = visualization_path / Path('map_query') / Path('trajectory_original_' + map_id + '.png')
     os.makedirs(os.path.dirname(img_path_orig), exist_ok=True)
     plt.savefig(img_path_orig)
     plt.close()

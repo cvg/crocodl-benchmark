@@ -22,14 +22,6 @@ def run(
     ):
     """
     Main function. Visualizes all trajectories of a given device and location.
-
-    Args:
-        capture: Capture -> Capture object containing the session path
-        ios: bool -> Enable ios trajectory visual
-        hl: bool -> Enable hl trajectory visual
-        spot: bool -> Enable spot trajectory visual
-    Output:
-        None
     """
     devices = []
     if ios:
@@ -53,7 +45,8 @@ def run(
             suffix = "spot"
         elif device == "ios":
             suffix = "phone"
-
+            
+        # read all trajectories
         session_ids = read_sequence_list(base_path / Path(location + "_" + suffix + ".txt"))
 
         logger.info("Processing all files ...")
@@ -61,11 +54,13 @@ def run(
         for session_id in session_ids:
             session_id = device + "_" + session_id
             logger.info(f"  Reading: {session_id}")
+            # get trajectory poses
             trajectory = extract_pose_data(capture, session_id)
             trajectories.append(trajectory)
             logger.info(f"  Done reading: {session_id}")
         logger.info("Done processing.")
-
+        
+        # visualize poses
         save_path = capture.viz_path() / Path('trajectories') / Path(f"trajectories_{device}.png")
         visualize_trajectories(trajectories=trajectories, save_path=save_path)
 

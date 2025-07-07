@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# Flags and arguments:
+# --capture_path : path to capture directory
+# --{device} : flags that need to be set to visualize map query split for specific device
+
 location="HYDRO"
 CAPTURE_DIR="/home/plukovic/research_assistant/capture/${location}/"
 
@@ -10,8 +14,6 @@ docker run --rm \
   croco:scantools \
   python3 -m scantools.run_visualize_trajectories \
     --capture_path /data/capture_dir  \
-    --ios \
-    --spot \
-    --hl 
+    --ios --spot --hl \ 
 
 echo "Done, run_visualize_trajectories process completed on $location."

@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Flags and arguments:
+# --capture_root : path to capture directory (without the scene name)
+# --scene : name of the scene, all capital leters
+# --skip_{device} : skips alignment of the device indicated with {device}
+# --run_lamar_splitting : runs lamar automatic map/query split (we recommend skipping this argument)
+
 location="HYDRO"
 CAPTURE_DIR="/home/plukovic/research_assistant/capture/"
 

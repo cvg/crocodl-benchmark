@@ -50,7 +50,7 @@ class PoseEstimation:
     method2class = {}
     method = None
     evaluation = {
-        'Rt_thresholds': [(1, 0.1), (5, 0.5), (5, 1.0)],
+        'Rt_thresholds': [(5, 0.5), (5, 1.0), (1, 0.1)],
     }
 
     def __init_subclass__(cls):

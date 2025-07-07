@@ -1,5 +1,17 @@
 #!/bin/bash
 
+# Flags and arguments:
+# --scene : name of the scene, all capital leters
+# --ref_id : name of the map session
+# --query_id : name of the query session
+# --retrieval : retrieval method
+# --feature : feature extraction method
+# --matcher : feature matcher method
+# --capture : path to capture directory
+# --outputs : path to the ouput directory
+# --query_filename : name of the file keyframes list, in query_name/proc/query_filename.txt
+# --is_rig : to be used with rig like query sessions, i.e. hololens and spot
+
 location="HYDRO"
 CAPTURE_DIR="/home/plukovic/research_assistant/capture/${location}/"
 OUTPUT_DIR="${CAPTURE_DIR}/benchmarking_og"

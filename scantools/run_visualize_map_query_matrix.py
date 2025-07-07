@@ -20,14 +20,6 @@ def run(
     Main function. Visualizes query and map of at least two of ios, hl, or spot. Or any combination of them.
     This function reads the trajectories for the specified devices and visualizes them in a matrix format.
     It requires at least two devices to be specified (ios, hl, spot).
-
-    Args:
-        capture: Capture -> Capture object containing the session path
-        ios: bool -> Enable iOS visual
-        hl: bool -> Enable HL visual
-        spot: bool -> Enable Spot visual
-    Output:
-        None
     """
 
     devices = []
@@ -46,6 +38,7 @@ def run(
     trajectories = []
 
     for device in devices:
+        # read and combine all trajectories into map/query trajectory
         map_query_trajectories = read_map_query_trajectories(capture, device)
         trajectories.append(map_query_trajectories['map'])
         trajectories.append(map_query_trajectories['query'])

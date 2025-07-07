@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# Flags and arguments:
+# --capture_path : path to capture directory
+
+# This script will run matrix visualization on all combinations of given devices.
+# You can tune it to your liking, or just run it once with wanted flags.
+
 location="HYDRO"
 CAPTURE_DIR="/home/plukovic/research_assistant/capture/${location}/"
 

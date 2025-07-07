@@ -1,11 +1,27 @@
 #!/bin/bash
 
-location="HYDRO"
+# Flags and arguments:
+# --scene : name of the scene, all capital leters
+# --ref_id : name of the map session
+# --query_id : name of the query session
+# --retrieval : retrieval method
+# --feature : feature extraction method
+# --matcher : feature matcher method
+# --capture : path to capture directory
+# --outputs : path to the ouput directory
+# --query_filename : name of the file keyframes list, in query_name/proc/query_filename.txt
+# --is_rig : to be used with rig like query sessions, i.e. hololens and spot
+
+# Consider writing output of this script in a file if you are using full configuration (all 18 configurations). 
+# Output is too long, you will not be able to see all the recall results inside a CLI! Something like this:
+# ./run_scripts/run_benchmarking.sh > location.txt 2>&1
+
+location="ARCHE_GRANDE"
 CAPTURE_DIR="/home/plukovic/research_assistant/capture/${location}/"
 OUTPUT="${CAPTURE_DIR}/benchmarking_og"
 
-devices_ref=(hl spot ios)
-device_query=(hl spot ios)
+devices_ref=(spot ios hl)
+device_query=(spot ios hl)
 
 echo "Starting benchmarking for scene: $location"
 

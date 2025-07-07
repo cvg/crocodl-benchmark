@@ -55,6 +55,11 @@ def run(input_file: Path,
         orin_path: Path,
         scene: str):
     
+    """
+    Given the input file, code takes give pairs of nuc and orin paths and combines them into merged file saved in Ouput_path.
+    Bagfiles are saved as a name of the nuc_file + scene_name + ".bag".
+    """
+    
     bags, col_bags = read_csv(input_file)
 
     for nuc, orin in bags:

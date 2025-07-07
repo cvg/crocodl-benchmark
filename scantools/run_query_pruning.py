@@ -45,6 +45,9 @@ conf_pruning = {
 }
 
 def save_configs(filename: Path):
+    """
+    Saves configuration of the query pruning algorithm.
+    """
     with open(filename, 'w') as f:
         f.write("# Configuration for query pruning\n")
         f.write(f"Distance threshold: {conf_pruning['distance']} m\n")
@@ -57,6 +60,9 @@ def save_configs(filename: Path):
     logger.info(f'Configuration saved to: {filename}')
 
 def check_distance_between_sesions(query: Dict, ref: Dict):
+    """
+    Calculates the distance matrix between each pair of query and ref poses.
+    """
     T_q2w = [query['session'].proc.alignment_trajectories[ts, sensor_id] for ts, sensor_id in query['keys']]
     T_r2w = [ref['session'].proc.alignment_trajectories[ts, sensor_id] for ts, sensor_id in ref['keys']]
     dR, dt = get_pairwise_distances(T_q2w, T_r2w)
@@ -65,7 +71,9 @@ def check_distance_between_sesions(query: Dict, ref: Dict):
 
 def extract_keyframes(session: Session,
                       conf: MatchingConf):
-
+    """
+    Extracts keyframes of given session.
+    """
     skip_cameras = set(conf.skip_cameras)
     skip_cameras = {i for i in session.sensors
                     if any(i.endswith(skip_camera) for skip_camera in skip_cameras)}
@@ -77,6 +85,9 @@ def extract_keyframes(session: Session,
     return keys
 
 def sample_query_trajectory(poses: np.ndarray):
+    """
+    Performs voxel subsampling on trajectory of poses.
+    """
 
     subsample_mask = np.ones(len(poses), dtype=bool)
     pose_pcd = o3d.geometry.PointCloud()
@@ -105,7 +116,11 @@ def sample_query_trajectory(poses: np.ndarray):
 
     return subsample_mask
 
-def prune_cross_query(capture: Capture, sessions_data: List[Dict]):
+def prune_cross_query(capture: Capture, sessions_data: List[Dict], just_vis: bool = False):
+    """
+    Function prunes each pose in a query session that does not have a pose closer than certain distance in both of the two other queries.
+    E.g. if one spot query does not have at least one (in each hl and phone) query closer than 1m, it will be pruned.
+    """
     
     session_data_pruned = []
     logger.info(f"Working on pruning keyframes cross queries. Distance: {conf_pruning['distance']}m. Found {len(sessions_data)} sessions in total.")
@@ -155,13 +170,17 @@ def prune_cross_query(capture: Capture, sessions_data: List[Dict]):
         visualize_query_pruning(poses=aligned_poses, poses_pruned=poses_pruned, filename=filename_vis)
         logger.info(f'      Visualization saved to: {filename_vis}')
 
-        filename_keys = capture.session_path(session_id) / 'proc' / 'keyframed_pruned.txt'
-        save_keyframes(session=query_session_pruned, filename=filename_keys)
-        logger.info(f'      Saved keyframes to: {filename_keys}')
+        if not just_vis:
+            filename_keys = capture.session_path(session_id) / 'proc' / 'keyframed_pruned.txt'
+            save_keyframes(session=query_session_pruned, filename=filename_keys)
+            logger.info(f'      Saved keyframes to: {filename_keys}')
 
     return session_data_pruned
 
 def save_keyframes(session: Dict, filename: Path):
+    """
+    Saves current state of the keyframes after processing.
+    """
 
     with open(filename, 'w') as f:
         #f.write("# timestamp sensor_id\n")
@@ -170,8 +189,10 @@ def save_keyframes(session: Dict, filename: Path):
 
     return
 
-def subsample_queries(capture: Capture, sessions_data: List[Dict]):
-
+def subsample_queries(capture: Capture, sessions_data: List[Dict], just_vis: bool = False):
+    """
+    For each of three query sessions, this function will subsample it using voxel subsampling.
+    """
     session_data_subsampled = []
     logger.info(f"Working on subsampling pruned keyframes. Using voxel filter with voxel size: {conf_pruning['voxel_size']} and keeping: {conf_pruning['keep_per_voxel']} points.")
 
@@ -204,13 +225,17 @@ def subsample_queries(capture: Capture, sessions_data: List[Dict]):
         visualize_query_pruning(poses=aligned_poses, poses_pruned=poses_subsampled, filename=filename_vis)
         logger.info(f'      Visualization saved to: {filename_vis}')
 
-        filename_keys = capture.session_path(session_id) / 'proc' / 'keyframes_pruned_subsampled.txt'
-        save_keyframes(session=query_session_subsampled, filename=filename_keys)
-        logger.info(f'      Saved keyframes to: {filename_keys}')
+        if not just_vis:
+            filename_keys = capture.session_path(session_id) / 'proc' / 'keyframes_pruned_subsampled.txt'
+            save_keyframes(session=query_session_subsampled, filename=filename_keys)
+            logger.info(f'      Saved keyframes to: {filename_keys}')
     
     return session_data_subsampled
 
 def process_queries(capture: Capture):
+    """
+    Reads keyframes of each query sessions (all three devices), and saves them into a txt file for benchmarking.
+    """
 
     query_data = []
 
@@ -249,25 +274,33 @@ def process_queries(capture: Capture):
             }
 
         query_data.append(query_session)
-        
-        filename_keys = capture.session_path(session_id) / 'proc' / 'keyframes_original.txt'
-        save_keyframes(session=query_session, filename=filename_keys)
-        logger.info(f'      Saved keyframes to: {filename_keys}')
         logger.info(f'      Loaded {len(keys)} keyframes for: {session_id}.')
 
     return query_data
 
 def run(
-        capture: Capture
+        capture: Capture,
+        just_vis: bool = False
     ):
+    """
+    Performs query processing:
+        1) saves configs
+        2) reads original keyframes and saves them
+        3) visalizes current state of the keyframes (original)
+        4) performs pruning
+        5) visalizes current state of the keyframes (after pruning)
+        6) performs subsampling
+        7) visalizes current state of the keyframes (after pruning and subsampling)
+    """
     
-    save_configs(filename=capture.path / 'query_pruning_config.txt')
+    if not just_vis:
+        save_configs(filename=capture.path / 'query_pruning_config.txt')
     query_data = process_queries(capture=capture)
     visualize_query_pruning_all_devices(query_data=query_data, filename=capture.viz_path() / Path('prunning') / Path('pruning_query_original_all.png'))
-    query_data_pruned = prune_cross_query(capture=capture, sessions_data=query_data)
+    query_data_pruned = prune_cross_query(capture=capture, sessions_data=query_data, just_vis=just_vis)
     visualize_query_pruning_all_devices(query_data=query_data_pruned, filename=capture.viz_path() / Path('prunning') / Path('pruning_query_pruned_all.png'))
-    query_data_subsampled = subsample_queries(capture=capture, sessions_data=query_data_pruned)
-    visualize_query_pruning_all_devices(query_data=query_data_subsampled, filename=capture.viz_path() / Path('prunning') / Path('pruning_query_subsampling_all.png'))
+    query_data_subsampled = subsample_queries(capture=capture, sessions_data=query_data_pruned, just_vis=just_vis)
+    visualize_query_pruning_all_devices(query_data=query_data_subsampled, filename=capture.viz_path() / Path('prunning') / Path('pruning_query_subsampled_all.png'))
 
     return query_data_subsampled
 
@@ -275,7 +308,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Merges sesions into query and map of at least one of ios, hl, or spot. Or any combination of them.")
     parser.add_argument('--capture_path', type=Path, required=True, help="Where the capture is located with the merged txt files")
-
+    parser.add_argument("--just_vis", action="store_true", help="Do not overwrite anything, just display visuals.", default=False)
 
     args = parser.parse_args().__dict__
     args['capture'] = Capture.load(args.pop('capture_path'))

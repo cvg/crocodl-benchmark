@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Flags and arguments:
+# --input_file : path to the input pairs file
+# --output_path : path to same merged bagfiles
+# --nuc_path : path to the directory storing nuc bagfiles
+# --orin_path : path to the directory storing orin bagfiles
+# --scene : name of the scene, all capital leters
+
 NUC_DIR="/home/plukovic/research_assistant/capture/HYDRO/raw/spot/nuc"
 ORIN_DIR="/home/plukovic/research_assistant/capture/HYDRO/raw/spot/orin"
 OUTPUT_DIR="/home/plukovic/research_assistant/capture/HYDRO/raw/spot/merged"

@@ -5,6 +5,7 @@ import numpy as np
 from pathlib import Path
 from scipy.spatial.transform import Rotation as R
 from scantools.capture import Capture
+from .capture.session import Device
 from scantools.viz.map_query import (
     visualize_map_query_rotation,
 )
@@ -19,6 +20,12 @@ from scantools.utils.utils import (
 )
 from scantools.utils.io import (
     read_sequence_list
+)
+
+from scantools.run_query_pruning import (
+    save_keyframes,
+    extract_keyframes,
+    conf_align
 )
 
 from pipelines.pipeline_sequence import *
@@ -115,15 +122,27 @@ def decompose_matrix(T):
     t = T[:3, 3]
     return q, t
 
+def read_random_transform_csv(transform_path):
+    """
+    Reads a transform from a transform_path file.
+    """
+    transform, col_transform = read_csv(transform_path)
+    q = [float(i) for i in transform[0][1:5]]
+    t = [float(i) for i in transform[0][5:]]
+    T = quaternion_and_translation_to_matrix(q, t)
+    return q.extend(t), T
+
 def rotate_trajectories(
         capture: Capture, 
-        map_id: str
+        map_id: str,
+        just_vis: bool = False
     ) -> None:
     """
     Rotate trajectories for a given map_id by applying a random transformation.
     Args:
         capture: Capture object containing the session data.
         map_id: Identifier for the map to process.
+        just_vis: Only get visuals.
     Output:
         None
     """
@@ -131,17 +150,23 @@ def rotate_trajectories(
     map_path = capture.session_path(map_id)
     
     trajectories, col_trajectories = read_csv(map_path / 'trajectories.txt')
+    col_transform = ['map_id', 'qw', 'qx', 'qy', 'qz', 'tx', 'ty', 'tz']
 
     trajectories_out = []
-
     translation_new = []
     translation_orig = []
     translation_restored = []
 
-    #transform, translation_matrix = generate_random_transform_6DOF()
-    transform, translation_matrix = generate_random_transform_4DOF()
+    if just_vis:
+        transform_path = map_path / 'transforms.txt'
+        logger.info(f"Reading transform from {transform_path}.")
+        transform, translation_matrix = read_random_transform_csv(map_path / 'transforms.txt')
+    else:
+        logger.info(f"Generating new 4DOF transform.")
+        transform, translation_matrix = generate_random_transform_4DOF()
+        write_csv(map_path / 'transforms.txt', [[map_id] + [str(x) for x in transform]], col_transform)
+    
     translation_matrix_inv = np.linalg.inv(translation_matrix)
-    col_transform = ['map_id', 'qw', 'qx', 'qy', 'qz', 'tx', 'ty', 'tz']
 
     for line in trajectories:
             
@@ -170,8 +195,8 @@ def rotate_trajectories(
     
     visualize_map_query_rotation(translation_orig, translation_new, translation_restored, capture.viz_path(), map_id)
 
-    write_csv(map_path / 'trajectories_augumented.txt', trajectories_out, col_trajectories)
-    write_csv(map_path / 'transforms.txt', [[map_id] + [str(x) for x in transform]], col_transform)
+    if not just_vis:
+        write_csv(map_path / 'trajectories_augumented.txt', trajectories_out, col_trajectories)
 
     logger.info(f"Augumented trajectories for {map_id} and saved to {map_path / 'trajectories_augumented.txt'}.")
 
@@ -179,17 +204,11 @@ def process_map_or_query(
         device: str = "",
         capture: Capture = None,
         map_or_query: str = "",
-        transform: bool = False
+        transform: bool = False,
+        just_vis: bool = False
     ) -> None:
     """
     Process map or query for file_path given.
-
-    Args:
-        device: "ios", "hl", or "spot
-        merge_file_path: Path to merge file
-        map_or_query: "map" or "query"
-    Output:
-        None    
     """
 
     sessions_id = []
@@ -201,40 +220,64 @@ def process_map_or_query(
     logger.info(f"Merging {map_or_query} for {device} from file {file_path} into folder {output_id}.")
     logger.info("Sessions to merge: \n    " + "\n    ".join(sessions_id))
 
-    if map_or_query == "map":
-        overwrite_poses = True
-        keyframing_conf = map_keyframing
-        capture_path = capture.path
-        clean_path = str(capture_path).rstrip('/')
-        base_path = Path(os.path.dirname(clean_path))
-        location = os.path.basename(clean_path)
-        ref_id, _, _, _ = eval('get_data_' + location)(base_path)
+    if not just_vis:
+        if map_or_query == "map":
+            overwrite_poses = True
+            keyframing_conf = map_keyframing
+            capture_path = capture.path
+            clean_path = str(capture_path).rstrip('/')
+            base_path = Path(os.path.dirname(clean_path))
+            location = os.path.basename(clean_path)
+            ref_id, _, _, _ = eval('get_data_' + location)(base_path)
 
-    elif map_or_query == "query":                    
-        overwrite_poses = False
-        keyframing_conf = eval_keyframing
-        ref_id = None
+        elif map_or_query == "query":                    
+            overwrite_poses = False
+            keyframing_conf = eval_keyframing
+            ref_id = None
 
-    logger.info(f"Overwrite poses: {overwrite_poses}.")
-    logger.info(f"Keyframing conf: {keyframing_conf}.")
-    logger.info(f"Reference id: {ref_id}.")
+        combined_session_path = capture.sessions_path() / output_id
 
-    combined_session_path = capture.sessions_path() / output_id
+        if os.path.exists(combined_session_path) and os.path.isdir(combined_session_path):
+            shutil.rmtree(combined_session_path)
+            logger.info(f"Combined session {combined_session_path} already exists, Deleting.")
+        
+        run_combine_sequences.run(
+                capture, 
+                sessions_id, 
+                output_id, 
+                overwrite_poses=overwrite_poses, 
+                reference_id=ref_id,
+                keyframing=keyframing_conf)
+        
+        if map_or_query == "query":
 
-    if os.path.exists(combined_session_path) and os.path.isdir(combined_session_path):
-        shutil.rmtree(combined_session_path)
-        logger.info(f"Combined session {combined_session_path} already exists, Deleting.")
+            session = capture.sessions[output_id]
+            device = session.device
 
-    run_combine_sequences.run(
-            capture, 
-            sessions_id, 
-            output_id, 
-            overwrite_poses=overwrite_poses, 
-            reference_id=ref_id,
-            keyframing=keyframing_conf)
-    
+            if device == Device.PHONE:
+                conf = conf_align['ios']
+            elif device == Device.HOLOLENS:
+                conf = conf_align['hl']
+            elif device == Device.SPOT:
+                conf = conf_align['spot']
+
+            keys = extract_keyframes(session=session, conf=conf.matching)
+
+            query_session = {
+                'session': session,
+                'device': device,
+                'session_id': output_id,
+                'keys': keys
+                }
+            
+            filename_keys = capture.session_path(output_id) / 'proc' / 'keyframes_original.txt'
+            save_keyframes(session=query_session, filename=filename_keys)
+            logger.info(f'Saved keyframes to: {filename_keys}')
+
+            
     if transform and map_or_query == "map":
-        rotate_trajectories(capture, output_id)
+        rotate_trajectories(capture, output_id, just_vis)
+
 
     logger.info(f"Done merging {map_or_query} for {device}.\n")
 
@@ -247,40 +290,36 @@ def run(capture: Capture,
         iosm: bool = False,
         hlm: bool = False,
         spotm: bool = False,
-        transform: bool = False):
+        transform: bool = False,
+        just_vis: bool = False):
     """
     Run function. Merges sessions into query or map for devices given.
-
-    Args:
-        None
-    Output:
-        None
     """
 
     if iosq:
         map_or_query = "query"
         device = "ios"
-        sessions_ios_q = process_map_or_query(device, capture, map_or_query, transform)
+        sessions_ios_q = process_map_or_query(device, capture, map_or_query, transform, just_vis)
     if hlq:
         map_or_query = "query"
         device = "hl"
-        sessions_hl_q = process_map_or_query(device, capture, map_or_query, transform)
+        sessions_hl_q = process_map_or_query(device, capture, map_or_query, transform, just_vis)
     if spotq:
         map_or_query = "query"
         device = "spot"
-        sessions_spot_q = process_map_or_query(device, capture, map_or_query, transform)
+        sessions_spot_q = process_map_or_query(device, capture, map_or_query, transform, just_vis)
     if iosm:
         map_or_query = "map"
         device = "ios"
-        sessions_ios_m = process_map_or_query(device, capture, map_or_query, transform)
+        sessions_ios_m = process_map_or_query(device, capture, map_or_query, transform, just_vis)
     if hlm:
         map_or_query = "map"
         device = "hl"
-        sessions_hl_m = process_map_or_query(device, capture, map_or_query, transform)
+        sessions_hl_m = process_map_or_query(device, capture, map_or_query, transform, just_vis)
     if spotm:
         map_or_query = "map"
         device = "spot"
-        sessions_spot_m = process_map_or_query(device, capture, map_or_query, transform)
+        sessions_spot_m = process_map_or_query(device, capture, map_or_query, transform, just_vis)
 
 if __name__ == "__main__":
 
@@ -292,7 +331,8 @@ if __name__ == "__main__":
     parser.add_argument("--iosm", action="store_true", help="Enable iOS map map merge")
     parser.add_argument("--hlm", action="store_true", help="Enable HL map map merge")
     parser.add_argument("--spotm", action="store_true", help="Enable Spot map map merge")
-    parser.add_argument("--transform", action="store_true", help="Enable transformation of trajectories for map")
+    parser.add_argument("--transform", action="store_true", help="Enable transformation of trajectories for map", default=False)
+    parser.add_argument("--just_vis", action="store_true", help="Do not overwrite anything, just display visuals.", default=False)
     
     args = parser.parse_args()
     

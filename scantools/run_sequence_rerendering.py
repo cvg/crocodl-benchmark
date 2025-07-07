@@ -99,7 +99,7 @@ def run(capture: Capture, ref_id: str, query_id: str, skip: int):
     renderer = Renderer(mesh)
     trajectory = session_q.proc.alignment_trajectories
     if T_mesh2global is not None:
-        trajectory = T_mesh2global.inv() * trajectory
+        trajectory = T_mesh2global.inv * trajectory
 
     # Set up plot.
     # Adjust bottom to make room for Buttons

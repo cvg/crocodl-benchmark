@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# Flags and arguments:
+# --capture_path : path to the capture directory
+# --just_vis : only generates visuals
+
 location="HYDRO"
 CAPTURE_DIR="/home/plukovic/research_assistant/capture/${location}/"
 
