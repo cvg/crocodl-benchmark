@@ -11,6 +11,6 @@ echo "Running run_visualize_map_query on $location ..."
 
 python3 -m scantools.run_visualize_map_query \
   --capture_path "$CAPTURE_DIR" \
-  --ios --spot --hl \
+  --ios --spot --hl
 
 echo "Done, run_visualize_map_query process completed on $location."

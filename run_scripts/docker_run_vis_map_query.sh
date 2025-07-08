@@ -14,6 +14,6 @@ docker run --rm \
   croco:scantools \
   python3 -m scantools.run_visualize_map_query \
     --capture_path /data/capture_dir  \
-    --ios --spot --hl \
+    --ios --spot --hl
     
 echo "Done, run_visualize_map_query process completed on $location."
