@@ -164,5 +164,6 @@ RUN python3 -m pip install --no-deps \
         pycolmap==0.4.0 \
         scikit-learn==1.5.2
 
-RUN cd /lamar && python3 -m pip install -e .  --no-deps
+RUN cd /lamar && python3 -m pip install -e . --no-deps
+
 WORKDIR /lamar

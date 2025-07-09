@@ -198,7 +198,11 @@ Processing transforms raw data sessions into capture format, aligns capture sess
     Output: `visualizations/map_query/matrix_{device_list}.png`.
 
   4) [`scantools/run_visualize_map_query_renders.py`](scantools/run_visualize_map_query_renders.py) - Visualizes comparison of renders and raw images in all map/query session that are avialable. It also saves a video of these images stiched together.
-    Output: `visualizations/renders/{device}_{map/query}/*png` and `visualizations/render_videos/{device}_{map/query}.mp4`
+    Output: `visualizations/renders/{device}_{map/query}/*png` and `visualizations/render_videos/{device}_{map/query}.mp4`.
+
+### *Anonymization*
+  1) [`scantools/run_image_anonymization.py`](scantools/run_image_anonymization.py) - Anonymizes all images from sessions. Faces and license plates using BrigtherAI or EgoBlur. You can anonymize both single session or the whole location. If you wish to use EgoBlur, download [ego_blur_face.jit](https://www.projectaria.com/tools/egoblur/) and [ego_blur_lp.jit](https://www.projectaria.com/tools/egoblur/) and put them inside [`anonymize/`](anonymize/)
+    Output: `anonymization_{method}/` folder containing anonymized sessions and additional files.
 
 ### 3.2 Benchmarking pipeline
 After fully processing the pipeline and confirming with visualizations you can now run the benchmarking pipeline. In this case you can choose whether to choose original keyframes, the ones generated after pruning or the ones generated after subsampling. These could be found in the corresponding `{map/query_session_id}/proc/keyframes_*.txt`, where the start can be: `original`, `_pruned` or `_pruned_subsampled`.
@@ -238,6 +242,8 @@ In case you are running our pipeline locally, you can use these given example ba
 
   13) [`run_scripts/run_read_benchmarking_output.sh`](run_scripts/run_read_benchmarking_output.sh) - In case you saved output to a .txt file, as suggested by [`run_scripts/run_benchmarking.sh`](run_scripts/run_benchmarking.sh), this script runs [`lamar/run_read_benchmarking_output.py`](lamar/run_read_benchmarking_output.py) locally and creates confusion matrix for all generated output.
 
+  14) [`run_scripts/run_anonymization.sh`](run_scripts/run_anonymization.sh) - Runs [`scantools/run_image_anonymization.py`](scantools/run_image_anonymization.py) locally.
+
 
 ### 3.4 Running in Docker
 In case you are running our pipeline on Docker, you can use these given example bash scripts with arguments:
@@ -267,6 +273,8 @@ In case you are running our pipeline on Docker, you can use these given example 
   12) [`run_scripts/docker_run_benchmarking.sh`](run_scripts/run_benchmarking.sh) - Runs [`lamar/run.py`](lamar/run.py) in a Docker container.
 
   13) [`run_scripts/docker_run_read_benchmarking_output.sh`](run_scripts/docker_run_read_benchmarking_output.sh) - In case you saved output to a .txt file, as suggested by [`run_scripts/docker_run_benchmarking.sh`](run_scripts/docker_run_benchmarking.sh), this script runs [`lamar/run_read_benchmarking_output.py`](lamar/run_read_benchmarking_output.py) in a Docker container and creates confusion matrix for all generated output.
+
+  14) [`run_scripts/docker_run_anonymization.sh`](run_scripts/docker_run_anonymization.sh) - Runs [`scantools/run_image_anonymization.py`](scantools/run_image_anonymization.py) in a Docker container.
 
 ## 4 Data
 
