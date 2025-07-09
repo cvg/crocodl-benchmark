@@ -236,7 +236,7 @@ In case you are running our pipeline locally, you can use these given example ba
 
   12) [`run_scripts/run_benchmarking.sh`](run_scripts/run_benchmarking.sh) - Runs [`lamar/run.py`](lamar/run.py) locally.
 
-  13) [`run_scripts/run_read_benchmarking_output.py`](lamar/run_read_benchmarking_output.py) - In case you saved output to a .txt file, as suggested by [`run_scripts/run_benchmarking.sh`](run_scripts/run_benchmarking.sh), this script runs [`lamar/run_read_benchmarking_output.py`](lamar/run_read_benchmarking_output.py) locally and creates confusion matrix for all generated output.
+  13) [`run_scripts/run_read_benchmarking_output.sh`](run_scripts/run_read_benchmarking_output.sh) - In case you saved output to a .txt file, as suggested by [`run_scripts/run_benchmarking.sh`](run_scripts/run_benchmarking.sh), this script runs [`lamar/run_read_benchmarking_output.py`](lamar/run_read_benchmarking_output.py) locally and creates confusion matrix for all generated output.
 
 
 ### 3.4 Running in Docker
@@ -266,7 +266,7 @@ In case you are running our pipeline on Docker, you can use these given example 
 
   12) [`run_scripts/docker_run_benchmarking.sh`](run_scripts/run_benchmarking.sh) - Runs [`lamar/run.py`](lamar/run.py) in a Docker container.
 
-  13) [`run_scripts/docker_run_read_benchmarking_output.py`](lamar/docker_run_read_benchmarking_output.py) - In case you saved output to a .txt file, as suggested by [`run_scripts/docker_run_benchmarking.sh`](run_scripts/docker_run_benchmarking.sh), this script runs [`lamar/run_read_benchmarking_output.py`](lamar/run_read_benchmarking_output.py) in a Docker container and creates confusion matrix for all generated output.
+  13) [`run_scripts/docker_run_read_benchmarking_output.sh`](run_scripts/docker_run_read_benchmarking_output.sh) - In case you saved output to a .txt file, as suggested by [`run_scripts/docker_run_benchmarking.sh`](run_scripts/docker_run_benchmarking.sh), this script runs [`lamar/run_read_benchmarking_output.py`](lamar/run_read_benchmarking_output.py) in a Docker container and creates confusion matrix for all generated output.
 
 ## 4 Data
 
