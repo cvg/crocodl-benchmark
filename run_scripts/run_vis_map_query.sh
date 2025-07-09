@@ -4,7 +4,7 @@
 # --capture_path : path to capture directory
 # --{device} : flags that need to be set to visualize map query split for specific device
 
-location="ARCHE_B5"
+location="ARCHE_B3"
 CAPTURE_DIR="/home/plukovic/research_assistant/capture/${location}/"
 
 echo "Running run_visualize_map_query on $location ..."

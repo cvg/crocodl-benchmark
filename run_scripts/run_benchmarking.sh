@@ -16,14 +16,19 @@
 # Output is too long, you will not be able to see all the recall results inside a CLI! Something like this:
 # ./run_scripts/run_benchmarking.sh > location.txt 2>&1
 
-location="ARCHE_GRANDE"
+# If you are saving to a .txt file you might use our run_scripts/run_read_benchmarking_output.sh script.
+# This will print out confusion matrices of benchamrking results only of recall and map/query names.
+
+location="ARCHE_B3"
 CAPTURE_DIR="/home/plukovic/research_assistant/capture/${location}/"
 OUTPUT="${CAPTURE_DIR}/benchmarking_og"
+QUERIES_FILE="keyframes_original.txt"
 
 devices_ref=(spot ios hl)
 device_query=(spot ios hl)
 
-echo "Starting benchmarking for scene: $location"
+# Do not remove or change this line if you intend to use automatic recall reading tool.
+echo "Starting benchmarking for scene: $location and queries file: $QUERIES_FILE"
 
 for ref in "${devices_ref[@]}"; do
   for query in "${device_query[@]}"; do
@@ -44,7 +49,7 @@ for ref in "${devices_ref[@]}"; do
       --matcher lightglue \
       --capture "$CAPTURE_DIR" \
       --outputs "$OUTPUT" \
-      --query_filename "keyframes_original.txt" \
+      --query_filename "$QUERIES_FILE" \
       $is_rig_flag
 
     echo "Benchmarking completed for ref_id=${ref}_map and query_id=${query}_query"
@@ -52,11 +57,13 @@ for ref in "${devices_ref[@]}"; do
   done
 done
 
-echo "Benchmarking completed for scene: $location"
+echo -e "Benchmarking completed for scene: $location and queries file: $QUERIES_FILE"
 
 OUTPUT="${CAPTURE_DIR}/benchmarking_ps"
+QUERIES_FILE="keyframes_pruned_subsampled.txt"
 
-echo "Starting benchmarking for scene: $location"
+# Do not remove or change this line if you intend to use automatic recall reading tool.
+echo "Starting benchmarking for scene: $location and queries file: $QUERIES_FILE"
 
 for ref in "${devices_ref[@]}"; do
   for query in "${device_query[@]}"; do
@@ -77,7 +84,7 @@ for ref in "${devices_ref[@]}"; do
       --matcher lightglue \
       --capture "$CAPTURE_DIR" \
       --outputs "$OUTPUT" \
-      --query_filename "keyframes_pruned_subsampled.txt" \
+      --query_filename "$QUERIES_FILE" \
       $is_rig_flag
 
     echo "Benchmarking completed for ref_id=${ref}_map and query_id=${query}_query"
@@ -85,4 +92,4 @@ for ref in "${devices_ref[@]}"; do
   done
 done
 
-echo "Benchmarking completed for scene: $location"
+echo -e "Benchmarking completed for scene: $location and queries file: $QUERIES_FILE"

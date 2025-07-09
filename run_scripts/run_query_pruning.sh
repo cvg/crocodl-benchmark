@@ -4,7 +4,7 @@
 # --capture_path : path to the capture directory
 # --just_vis : only generates visuals
 
-location="ARCHE_B5"
+location="ARCHE_B3"
 CAPTURE_DIR="/home/plukovic/research_assistant/capture/${location}/"
 
 echo "Running run_query_pruning on $location ..."

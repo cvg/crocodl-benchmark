@@ -10,7 +10,7 @@
 # Consider using --simplified_mesh flag if you have less that 32GB RAM. Most of the locations 
 # would not run with less than 32GB RAM.
 
-location="ARCHE_B5"
+location="ARCHE_B3"
 CAPTURE_DIR="/home/plukovic/research_assistant/capture/${location}/"
 
 echo "Running run_visualize_map_query_renders on $location ..."

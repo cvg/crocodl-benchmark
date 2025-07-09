@@ -6,7 +6,7 @@
 # This script will run matrix visualization on all combinations of given devices.
 # You can tune it to your liking, or just run it once with wanted flags.
 
-location="ARCHE_B5"
+location="ARCHE_B3"
 CAPTURE_DIR="/home/plukovic/research_assistant/capture/${location}/"
 
 flags=(--ios --spot --hl)

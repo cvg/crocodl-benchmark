@@ -6,7 +6,7 @@
 # --transform : generate 4DOF transformation and transform trajectories
 # --just_viz : only generate visualizations and files, without overwriting
 
-location="ARCHE_B5"
+location="ARCHE_B3"
 CAPTURE_DIR="/home/plukovic/research_assistant/capture/${location}/"
 
 echo "Running run_map_query_split_manual on $location ..."

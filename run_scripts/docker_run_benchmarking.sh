@@ -12,32 +12,92 @@
 # --query_filename : name of the file keyframes list, in query_name/proc/query_filename.txt
 # --is_rig : to be used with rig like query sessions, i.e. hololens and spot
 
-location="HYDRO"
+# Consider writing output of this script in a file if you are using full configuration (all 18 configurations). 
+# Output is too long, you will not be able to see all the recall results inside a CLI! Something like this:
+# ./run_scripts/run_benchmarking.sh > location.txt 2>&1
+
+# If you are saving to a .txt file you might use our run_scripts/run_read_benchmarking_output.sh script.
+# This will print out confusion matrices of benchamrking results only of recall and map/query names.
+
+location="ARCHE_B3"
 CAPTURE_DIR="/home/plukovic/research_assistant/capture/${location}/"
-OUTPUT_DIR="${CAPTURE_DIR}/benchmarking_og"
+OUTPUT="${CAPTURE_DIR}/benchmarking_og"
+QUERIES_FILE="keyframes_original.txt"
 
-devices=(spot ios hl)
+devices_ref=(spot ios hl)
+device_query=(spot ios hl)
 
-echo "Running benchmarking on $location inside a Docker ..."
+# Do not remove or change this line if you intend to use automatic recall reading tool.
+echo "Starting benchmarking for scene: $location and queries file: $QUERIES_FILENAME"
 
-for ref in "${devices[@]}"; do
-  for query in "${devices[@]}"; do
+for ref in "${devices_ref[@]}"; do
+  for query in "${device_query[@]}"; do
     echo "Running with ref_id=${ref}_map and query_id=${query}_query ..."
+    
+    is_rig_flag=""
+    if [[ "$query" == "hl" || "$query" == "spot" ]]; then
+      is_rig_flag="--is_rig"
+      echo "Run is using flag --is_rig due to ${query}_query"
+    fi
+
     docker run --rm \
       -v "$OUTPUT_DIR":/data/output_dir \
       -v "$CAPTURE_DIR":/data/capture_dir \
       croco:lamar \
       python -m lamar.run \
-        --scene "$SCENE" \
-        --ref_id "${ref}_map" \
-        --query_id "${query}_query" \
-        --retrieval netvlad \
-        --feature superpoint \
-        --matcher lightglue \
-        --capture /data/capture_dir \
-        --outputs /data/output_dir
-    echo "Done, benchmarking completed for ref_id=${ref}_map and query_id=${query}_query."
+      --scene "$SCENE" \
+      --ref_id "${ref}_map" \
+      --query_id "${query}_query" \
+      --retrieval netvlad \
+      --feature superpoint \
+      --matcher lightglue \
+      --capture "$CAPTURE_DIR" \
+      --outputs "$OUTPUT" \
+      --query_filename "$QUERIES_FILENAME" \
+      $is_rig_flag
+
+    echo "Benchmarking completed for ref_id=${ref}_map and query_id=${query}_query"
+    echo ""
   done
 done
 
-echo "Done, benchmarking process completed on $location."
+echo -e "Benchmarking completed for scene: $location and queries file: $QUERIES_FILENAME"
+
+OUTPUT="${CAPTURE_DIR}/benchmarking_ps"
+QUERIES_FILE="keyframes_pruned_subsampled.txt"
+
+# Do not remove or change this line if you intend to use automatic recall reading tool.
+echo "Starting benchmarking for scene: $location and queries file: $QUERIES_FILENAME"
+
+for ref in "${devices_ref[@]}"; do
+  for query in "${device_query[@]}"; do
+    echo "Running with ref_id=${ref}_map and query_id=${query}_query ..."
+    
+    is_rig_flag=""
+    if [[ "$query" == "hl" || "$query" == "spot" ]]; then
+      is_rig_flag="--is_rig"
+      echo "Run is using flag --is_rig due to ${query}_query"
+    fi
+
+    docker run --rm \
+      -v "$OUTPUT_DIR":/data/output_dir \
+      -v "$CAPTURE_DIR":/data/capture_dir \
+      croco:lamar \
+      python -m lamar.run \
+      --scene "$SCENE" \
+      --ref_id "${ref}_map" \
+      --query_id "${query}_query" \
+      --retrieval netvlad \
+      --feature superpoint \
+      --matcher lightglue \
+      --capture "$CAPTURE_DIR" \
+      --outputs "$OUTPUT" \
+      --query_filename "$QUERIES_FILENAME" \
+      $is_rig_flag
+
+    echo "Benchmarking completed for ref_id=${ref}_map and query_id=${query}_query"
+    echo ""
+  done
+done
+
+echo -e "Benchmarking completed for scene: $location and queries file: $QUERIES_FILENAME"
