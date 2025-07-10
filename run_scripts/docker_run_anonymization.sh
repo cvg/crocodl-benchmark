@@ -11,7 +11,7 @@
 location="DESIGN"
 CAPTURE_DIR="/home/plukovic/research_assistant/capture/${location}"
 
-echo "Running run_image_anonymization on $location ..."
+echo "Running run_image_anonymization on $location inside a Docker ..."
 
 docker run --rm \
   -v "$CAPTURE_DIR":/data/capture_dir \

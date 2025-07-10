@@ -49,6 +49,8 @@ scantools = [
     "jupyter_compare_view==0.2.4", 
     "ipykernel==6.29.5",
     "redact-client @ git+https://github.com/brighter-ai/redact-client.git",
+    "torch==2.7.1",
+    "torchvision==0.22.1"
 ]
 
 dev = [

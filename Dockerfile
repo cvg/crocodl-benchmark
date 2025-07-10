@@ -88,6 +88,8 @@ RUN python3 -m pip install --no-deps \
         h5py==3.10.0 \
         pyquaternion==0.9.9 
 
+RUN pip install git+https://github.com/brighter-ai/redact-client.git
+RUN python3 -m pip install torch==2.7.1 torchvision==0.22.1 --index-url https://download.pytorch.org/whl/cpu
 RUN python3 -m pip install bagpy==0.5
 
 RUN cd lamar && python3 -m pip install -e .[scantools] --no-deps

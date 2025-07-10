@@ -2,7 +2,7 @@ outputs/
 data/
 external/
 raybender/
-anonymization/*
+anonymization/
 
 
 # Byte-compiled / optimized / DLL files
