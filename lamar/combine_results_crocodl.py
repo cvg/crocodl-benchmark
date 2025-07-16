@@ -6,8 +6,8 @@ from pathlib import Path
 from . import logger
 
 
-SCENES = ["hydro"]
-DEVICES = ["phone", "hololens", "spot"]
+SCENES = ["hydro", "succu"]
+DEVICES = ["ios", "hl", "spot"]
 
 def assert_valid_txt_path(path: Path):
     """Assert that the txt path is valid."""
