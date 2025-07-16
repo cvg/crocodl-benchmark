@@ -24,7 +24,7 @@ mkidr -p "${CAPTURE_DIR}"
 
 if $CHALLENGE; then
   echo "Running in challenge mode..."
-  scenes=("HYDRO" "SUCCULENT")
+  scenes=("HYDRO")
   for scene in "${scenes[@]}"; do
     hf_dataset="${scene}-challenge"
     target_dir="${CAPTURE_DIR}/${scene}"
@@ -41,5 +41,5 @@ fi
 
 if $FULL_RELEASE; then
   echo "Running in full release mode..."
-  # Add your full release logic here
+  # TODO
 fi

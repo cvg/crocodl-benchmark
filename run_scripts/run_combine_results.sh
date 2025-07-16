@@ -8,6 +8,7 @@
 # --capture_dir : path to the capture directory
 
 # If you are using our data and the folder structure, script should work out-of-the-box just by alternating capture_dir
+# To change folder structure depending on your method, you can change METHOD variables or directly line 44
 
 SCENES=("hydro" "succu")
 DEVICES=("ios" "hl" "spot")
@@ -16,6 +17,10 @@ CAPTURE_DIR="/media/plukovic/CVG 2TB NTFS/capture"
 BENCHMARKING_DIR="benchmarking_ps"
 DESCRIPTION_PATH="${CAPTURE_DIR}/codabench/desc.txt"
 OUTPUT_DIR="${CAPTURE_DIR}/codabench"
+
+KEYPOINT_METHOD="superpoint"
+MATCHING_METHOD="lightglue"
+EXTRACTION_METHOD="netvlad-10"
 
 echo "Running combine_results_crocodl with arguments locally ..."
 echo "python3 -m lamar.combine_results_crocodl \\"
@@ -36,7 +41,7 @@ for scene in "${SCENES[@]}"; do
       else
         device_type="rig"
       fi
-      file_path="${LOCATION_PATH}/${BENCHMARKING_DIR}/pose_estimation/${query_device}_query/${map_device}_map/superpoint/lightglue/netvlad-10/triangulation/${device_type}/poses.txt"
+      file_path="${LOCATION_PATH}/${BENCHMARKING_DIR}/pose_estimation/${query_device}_query/${map_device}_map/${KEYPOINT_METHOD}/${MATCHING_METHOD}/${EXTRACTION_METHOD}/triangulation/${device_type}/poses.txt"
       echo "  $var_name \"$file_path\" \\"
       CMD+=" ${var_name} \"${file_path}\""
     done

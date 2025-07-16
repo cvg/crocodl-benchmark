@@ -25,7 +25,9 @@
   <h2 align="center">CVPR 2025</h2>
   <h3 align="center">
     <a href="https://localizoo.com/crocodl/">WEBSITE</a> | 
-    <a href="https://openaccess.thecvf.com/content/CVPR2025/html/Blum_CroCoDL_Cross-device_Collaborative_Dataset_for_Localization_CVPR_2025_paper.html"> PAPER</a>
+    <a href="https://openaccess.thecvf.com/content/CVPR2025/html/Blum_CroCoDL_Cross-device_Collaborative_Dataset_for_Localization_CVPR_2025_paper.html"> PAPER</a> |
+    <a href="https://www.codabench.org/competitions/9471/">CHALLENGE</a> |
+    <a href="https://huggingface.co/CroCoDL">DATASET</a> 
   </h3>
   <div align="center"></div>
 </p>
