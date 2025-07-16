@@ -288,9 +288,10 @@ In case you are running our pipeline on Docker, you can use these given example 
 
 ## 4 Data
 
-In this section we will explain how to download our data and how to run benchmarking with your models. If you want to read more about data we provide can have a look [here](DATA.md). We host our data on [huggingface](https://huggingface.co/CroCoDL), considering you have have set up environments as we explained in section [Getting Started](#1-getting-started), here is how to download our dataset:
+In this section we will explain how to download our data and how to run benchmarking with your models. If you want to read more about data we provide can have a look [here](DATA.md). considering you have have cloned our [repository](https://github.com/cvg/crocodl-benchmark) set up environments as we explained in section [Getting Started](#1-getting-started). Take not that if you are only running benchmarking, you need only benchmarking dependencies. Here is how to download our dataset:
 
 ### 4.1 Challenge data
+#### Step 1 - Download
 We provide a simple script to download all challenge data at once using git. The script will create the necessary folder structure such that data is ready out of the box. For the code to run smoothly, you should use given folder structure. Firstly, to download challenge data you can run:
 
 ```
@@ -299,6 +300,7 @@ We provide a simple script to download all challenge data at once using git. The
 
 you can alter the path of the dataset, however, final folder has to be named **capture/**. Challenge data comes in the same folder as regular, full release, data but with removed ground truth and consisting only of maps and queries for all devices. For the challenge we provide two locations: **HYDRO** and **SUCCULENT**. Once the data is downloaded, you can run benchmarking on it!
 
+#### Step 2 - Benchmarking
 To start the benchmarking you will use the following script:
 
 ```
@@ -311,7 +313,7 @@ or
 ./run_scripts/docker_run_benchmarking.sh > location.txt 2>&1
 ```
 
-if you wish to run in Docker container. Here you should only set **CAPTURE_DIR** and **location** variables to fit your folder of choice and location you want to run. You might also alter the map or query device you wish to benchmark. You can remove printing out to a .txt file, however, output might get too long to read in the CLI. Also, if you print output to a file you could use our convenience script to get the confusion matrices afterwards. This you can do as follows (alter the file path inside the script):
+if you wish to run in Docker container. Here you should only set **CAPTURE_DIR** and **location** variables to fit your folder of choice and location you want to run. You might also alter the map or query device you wish to benchmark. You can remove printing out to a .txt file, however, output might get too long to read in the CLI. Also, if you print output to a file you could use our convenience script to get the confusion matrices afterwards, or skip this step altogether. This you can do as follows (alter the file path inside the script):
 
 ```
 ./run_scripts/read_benchmarking_results.sh
@@ -323,7 +325,8 @@ or
 ./run_scripts/docker_read_benchmarking_results.sh
 ```
 
-Step above can be skipped altogether. Finally, you can run the script to zip all the results. Your estimated poses are burried deeply inside of benchmarking output folder (by default set to /capture/{location}/benchmarking_ps, but you can change it inside of [`run_scripts/docker_run_benchmarking.sh`](run_scripts/run_benchmarking.sh)), so we made a quick script to generate the submission .zip file. You can run it as follows: 
+#### Step 3 - Results file generation
+Finally, you can run the script to zip all the results. Your estimated poses are burried deeply inside of benchmarking output folder (by default set to /capture/{location}/benchmarking_ps, but you can change it inside of [`run_scripts/run_benchmarking.sh`](run_scripts/run_benchmarking.sh) or [`run_scripts/docker_run_benchmarking.sh`](run_scripts/docker_run_benchmarking.sh)), so we made a quick script to generate the submission .zip file. You can run it as follows: 
 
 ```
 ./run_scripts/run_combine_results.sh
@@ -335,7 +338,7 @@ or
 ./run_scripts/docker_run_combine_results.sh
 ```
 
-Similarily with other scripts, you can alter the parameters inside [`run_scripts/docker_run_benchmarking.sh`](run_scripts/run_benchmarking.sh). Do not forget to add description file for your model too! You are now ready to make your submission on our challenge [website](https://www.codabench.org/competitions/9471/), congratulations!
+Similarily with other scripts, you can alter the parameters inside [`run_scripts/run_combine_results.sh`](run_scripts/run_combine_results.sh) or [`run_scripts/dodcker_run_combine_results.sh`](run_scripts/docker_run_combine_results.sh). Do not forget to add description file for your model too! You are now ready to make your submission on our challenge [website](https://www.codabench.org/competitions/9471/), congratulations!
 
 ### 4.2 Full release data
 TODO:
