@@ -5,6 +5,10 @@ from pathlib import Path
 
 from . import logger
 
+
+SCENES = ["hydro"]
+DEVICES = ["phone", "hololens", "spot"]
+
 def assert_valid_txt_path(path: Path):
     """Assert that the txt path is valid."""
     assert path.exists()
@@ -49,61 +53,16 @@ if __name__ == '__main__':
         type=Path,
         required=True,
         help="Path to a text file containing description of the submission.",
-    )
-    parser.add_argument(
-        "--hydro_map_phone_query_phone_path",
-        type=Path,
-        default=None,
-        help="File containing the HYDRO map phone query phone estimated poses.",
-    )
-    parser.add_argument(
-        "--hydro_map_phone_query_hololens_path",
-        type=Path,
-        default=None,
-        help="File containing the HYDRO map phone query HL estimated poses.",
-    )
-    parser.add_argument(
-        "--hydro_map_phone_query_spot_path",
-        type=Path,
-        default=None,
-        help="File containing the HYDRO map phone query Spot estimated poses.",
-    )
-    parser.add_argument(
-        "--hydro_map_hololens_query_phone_path",
-        type=Path,
-        default=None,
-        help="File containing the HYDRO map HL query phone estimated poses.",
-    )
-    parser.add_argument(
-        "--hydro_map_hololens_query_hololens_path",
-        type=Path,
-        default=None,
-        help="File containing the HYDRO map HL query HL estimated poses.",
-    )
-    parse.add_argument(
-        "--hydro_map_hololens_query_spot_path",
-        type=Path,
-        default=None,
-        help="File containing the HYDRO map HL query Spot estimated poses.",
-    )
-    parser.add_argument(
-        "--hydro_map_spot_query_phone_path",
-        type=Path,
-        default=None,
-        help="File containing the HYDRO map Spot query phone estimated poses.",
-    )
-    parser.add_argument(
-        "--hydro_map_spot_query_hololens_path",
-        type=Path,
-        default=None,
-        help="File containing the HYDRO map Spot query HL estimated poses.",
-    )
-    parser.add_argument(
-        "--hydro_map_spot_query_spot_path",
-        type=Path,
-        default=None,
-        help="File containing the HYDRO map Spot query Spot estimated poses.",
-    )
+    )    
+    for scene in SCENES:
+        for map_device in DEVICES:
+            for query_device in DEVICES:
+                parser.add_argument(
+                    f"--{scene}_map_{map_device}_query_{query_device}_path",
+                    type=Path,
+                    default=None,
+                    help=f"File containing the {scene.upper()} map {map_device} query {query_device} estimated poses.",
+                )
     parser.add_argument(
         "--output_dir",
         type=Path,
