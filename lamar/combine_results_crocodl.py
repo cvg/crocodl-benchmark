@@ -16,7 +16,7 @@ def assert_valid_txt_path(path: Path):
     assert path.suffix == ".txt"
 
 
-def combine_results(description_path: Path, results_paths: dict[str, Path], output_dir: Path):
+def combine_results(description_path: Path, results_paths: dict[str, Path | None], output_dir: Path):
     # Generate timestamp for the zip file name.
     timestamp = datetime.datetime.now().strftime("%Y.%m.%d_%H.%M.%S")
     zip_filename = output_dir / f"submission_{timestamp}.zip"
@@ -39,7 +39,7 @@ def combine_results(description_path: Path, results_paths: dict[str, Path], outp
                 continue
             logger.info(f"Adding [{split}] file from {path} to zip")
             assert_valid_txt_path(path)
-            zipf.write(path, arcname=f"{split[0].upper()}_{"_".join(split[1:])}.txt")
+            zipf.write(path, arcname=f"{split[0].upper()}_{'_'.join(split[1:])}.txt")
     logger.info(f"Successfully created zip file at {zip_filename}")
 
 
