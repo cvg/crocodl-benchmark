@@ -127,7 +127,3 @@ where location can be any of these 7 listed ones. Each of the locations has same
 ```
 
 You could find all of the location information, including session list per location, ground truth NavVis scan, map/query splits in the provided [locations sheet](locations_release.xlsx).
-
-### 4 Data download
-TODO: 
-

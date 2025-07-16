@@ -8,10 +8,10 @@
 
 OUTPUT_FILE="/home/plukovic/research_assistant/crocodl-benchmark/b3.txt"
 
-echo "Running run_read_benchmarking_output on $OUTPUT_FILE ..."
+echo "Running read_benchmarking_output on $OUTPUT_FILE ..."
 
-python -m lamar.run_read_benchmarking_output \
+python -m lamar.read_benchmarking_output \
       --file_path "$OUTPUT_FILE" \
       --conf_matrix
   
-echo "Done, run_read_benchmarking_output process completed on $OUTPUT_FILE."
+echo "Done, read_benchmarking_output process completed on $OUTPUT_FILE."

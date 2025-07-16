@@ -9,7 +9,6 @@ from .capture import (
     RecordsCamera, RecordsDepth, RecordsLidar, RecordsWifi, RecordsBluetooth)
 from .proc.alignment.image_matching import KeyFramingConf, subsample_poses
 
-
 def prefixed_id(sensor_or_rig_id, session_id):
     return f'{session_id}/{sensor_or_rig_id}'
 

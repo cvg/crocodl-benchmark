@@ -43,7 +43,6 @@ def combine_results(description_path: Path, results_paths: dict[str, Path | None
     logger.info(f"Successfully created zip file at {zip_filename}")
 
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description="Combine estimated poses from multiple scenes / devices in a zip file for evaluation."

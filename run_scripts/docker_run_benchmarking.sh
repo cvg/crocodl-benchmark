@@ -21,50 +21,11 @@
 
 location="ARCHE_B3"
 CAPTURE_DIR="/home/plukovic/research_assistant/capture/${location}/"
-OUTPUT="${CAPTURE_DIR}/benchmarking_og"
-QUERIES_FILE="keyframes_original.txt"
+OUTPUT="${CAPTURE_DIR}/benchmarking_ps"
+QUERIES_FILE="keyframes_pruned_subsampled.txt"
 
 devices_ref=(spot ios hl)
 device_query=(spot ios hl)
-
-# Do not remove or change this line if you intend to use automatic recall reading tool.
-echo "Starting benchmarking for scene: $location and queries file: $QUERIES_FILENAME"
-
-for ref in "${devices_ref[@]}"; do
-  for query in "${device_query[@]}"; do
-    echo "Running with ref_id=${ref}_map and query_id=${query}_query ..."
-    
-    is_rig_flag=""
-    if [[ "$query" == "hl" || "$query" == "spot" ]]; then
-      is_rig_flag="--is_rig"
-      echo "Run is using flag --is_rig due to ${query}_query"
-    fi
-
-    docker run --rm \
-      -v "$OUTPUT_DIR":/data/output_dir \
-      -v "$CAPTURE_DIR":/data/capture_dir \
-      croco:lamar \
-      python -m lamar.run \
-      --scene "$SCENE" \
-      --ref_id "${ref}_map" \
-      --query_id "${query}_query" \
-      --retrieval netvlad \
-      --feature superpoint \
-      --matcher lightglue \
-      --capture "$CAPTURE_DIR" \
-      --outputs "$OUTPUT" \
-      --query_filename "$QUERIES_FILENAME" \
-      $is_rig_flag
-
-    echo "Benchmarking completed for ref_id=${ref}_map and query_id=${query}_query"
-    echo ""
-  done
-done
-
-echo -e "Benchmarking completed for scene: $location and queries file: $QUERIES_FILENAME"
-
-OUTPUT="${CAPTURE_DIR}/benchmarking_ps"
-QUERIES_FILE="keyframes_pruned_subsampled.txt"
 
 # Do not remove or change this line if you intend to use automatic recall reading tool.
 echo "Starting benchmarking for scene: $location and queries file: $QUERIES_FILENAME"
