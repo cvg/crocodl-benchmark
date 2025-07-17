@@ -319,10 +319,10 @@ or
 ./run_scripts/docker_run_benchmarking.sh > location.txt 2>&1
 ```
 
-if you wish to run in Docker container. You can remove printing out to a .txt file, however, output might get too long to read in the CLI.
+if you wish to run in Docker container. You can remove printing out to a .txt file, however, output might get too long to read in the CLI. You can either use the methods already available in lamar or implement your own. Make sure to update the flags in the run_benchmarking.sh script accordingly.
 
 #### Step 3 - Results file generation
-Finally, you can run the script to zip all the results. Your estimated poses are burried deeply inside of benchmarking output folder (by default set to /capture/{location}/benchmarking_ps, but you can change it inside of [`run_scripts/run_benchmarking.sh`](run_scripts/run_benchmarking.sh) or [`run_scripts/docker_run_benchmarking.sh`](run_scripts/docker_run_benchmarking.sh)), so we made a quick script to generate the submission .zip file. You can run it as follows: 
+Finally, you can run the script to zip all the results. Your estimated poses are burried deeply inside of benchmarking output folder (by default set to /capture/{location}/benchmarking_ps, but you can change it inside of [`benchmark_scripts/run_benchmarking.sh`](benchmark_scripts/run_benchmarking.sh) or [`benchmark_scripts/docker_run_benchmarking.sh`](benchmark_scripts/docker_run_benchmarking.sh)), so we made a quick script to generate the submission .zip file. You can run it as follows: 
 
 ```
 ./run_scripts/run_combine_results.sh
@@ -334,7 +334,7 @@ or
 ./run_scripts/docker_run_combine_results.sh
 ```
 
-Similarily with other scripts, you can alter the parameters inside [`run_scripts/run_combine_results.sh`](run_scripts/run_combine_results.sh) or [`run_scripts/dodcker_run_combine_results.sh`](run_scripts/docker_run_combine_results.sh). Do not forget to add description file for your model too! You are now ready to make your submission on our challenge [website](https://www.codabench.org/competitions/9471/), congratulations!
+Similarily with other scripts, you can alter the parameters inside [`benchmark_scripts/run_combine_results.sh`](benchmark_scripts/run_combine_results.sh) or [`benchmark_scripts/dodcker_run_combine_results.sh`](benchmark_scripts/docker_run_combine_results.sh). Do not forget to add description file for your model too! You are now ready to make your submission on our challenge [website](https://www.codabench.org/competitions/9471/), congratulations!
 
 ### 4.2 Full release data
 TODO:

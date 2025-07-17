@@ -20,7 +20,7 @@ DESCRIPTION_FILE="${CAPTURE_DIR}/codabench/desc.txt"
 OUTPUT_DIR="${CAPTURE_DIR}/codabench"
 LOCAL_FEATURE_METHOD="superpoint"
 MATCHING_METHOD="lightglue"
-GLOBAL_FEATURE_METHOD="netvlad"
+GLOBAL_FEATURE_METHOD="netvlad-10"
 SCENES=("hydro" "succu")
 DEVICES_MAP=("ios" "hl" "spot")
 DEVICES_QUERY=("ios" "hl" "spot")
@@ -34,8 +34,8 @@ echo "  Local feature method: ${LOCAL_FEATURE_METHOD}"
 echo "  Matching method: ${MATCHING_METHOD}"
 echo "  Global feature method: ${GLOBAL_FEATURE_METHOD}"
 echo "  Scenes: ${SCENES[@]}"
-echo "  Devices: ${DEVICES_MAP[@]}"
-echo "  Devices: ${DEVICES_QUERY[@]}"
+echo "  Devices map: ${DEVICES_MAP[@]}"
+echo "  Devices query: ${DEVICES_QUERY[@]}"
 
 read -p "Do you want to continue? (y/n): " answer
 

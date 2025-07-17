@@ -37,7 +37,7 @@ def combine_results(description_path: Path, results_paths: dict[str, Path | None
             if path is None:
                 logger.warning(f"No path provided for [{split}], skipping...")
                 continue
-            logger.info(f"Adding [{split}] file from {path} to zip")
+            logger.info(f"Adding [{name}] file from {path} to zip")
             assert_valid_txt_path(path)
             zipf.write(path, arcname=f"{split[0].upper()}_{'_'.join(split[1:])}.txt")
     logger.info(f"Successfully created zip file at {zip_filename}")
