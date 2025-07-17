@@ -10,10 +10,10 @@
 # If you are using our data and the folder structure, script should work out-of-the-box just by alternating capture_dir
 # To change folder structure depending on your method, you can change METHOD variables or directly line 44
 
-SCENES=("hydro" "succu")
+SCENES=("hydro")
 DEVICES=("ios" "hl" "spot")
-#CAPTURE_DIR="/home/plukovic/research_assistant/capture"
-CAPTURE_DIR="/media/plukovic/CVG 2TB NTFS/capture"
+CAPTURE_DIR="/home/plukovic/research_assistant/capture"
+#CAPTURE_DIR="/media/plukovic/CVG 2TB NTFS/capture"
 BENCHMARKING_DIR="benchmarking_ps"
 DESCRIPTION_PATH="${CAPTURE_DIR}/codabench/desc.txt"
 OUTPUT_DIR="${CAPTURE_DIR}/codabench"
@@ -33,6 +33,7 @@ for scene in "${SCENES[@]}"; do
     LOCATION_PATH="${CAPTURE_DIR}/SUCCULENT"
   else
     LOCATION_PATH="${CAPTURE_DIR}/${scene^^}"
+  fi
   for map_device in "${DEVICES[@]}"; do
     for query_device in "${DEVICES[@]}"; do
       var_name="--${scene}_map_${map_device}_query_${query_device}_path"

@@ -30,23 +30,23 @@ if [ -z "$LOCATION" ]; then
 fi
 
 CAPTURE="${CAPTURE_DIR}/${LOCATION}"
-OUTPUT="${CAPTURE}/benchmarking_ps"
+OUTPUT_DIR="${CAPTURE}/benchmarking_ps"
 QUERIES_FILE="keyframes_pruned_subsampled.txt"
 LOCAL_FEATURE_METHOD="superpoint"
 MATCHING_METHOD="lightglue"
 GLOBAL_FEATURE_METHOD="netvlad"
-devices_ref=(spot ios hl)
-device_query=(spot ios hl)
+DEVICES_REF=(spot ios hl)
+DEVICES_QUERY=(spot ios hl)
 
 echo "You are running with parameters: "
 echo "  Capture: ${CAPTURE}"
-echo "  Output: ${OUTPUT}"
+echo "  Output: ${OUTPUT_DIR}"
 echo "  Queries file: ${QUERIES_FILE}"
 echo "  Local feature method: ${LOCAL_FEATURE_METHOD}"
 echo "  Matching method: ${MATCHING_METHOD}"
 echo "  Global feature method: ${GLOBAL_FEATURE_METHOD}"
-echo "  Reference devices: ${devices_ref[@]}"
-echo "  Query devices: ${device_query[@]}"
+echo "  Reference devices: ${DEVICES_REF[@]}"
+echo "  Query devices: ${DEVICES_QUERY[@]}"
 
 read -p "Do you want to continue? (y/n): " answer
 
@@ -56,7 +56,7 @@ if [[ ! "$answer" =~ ^[Yy]$ ]]; then
 fi
 
 # Do not remove or change this line if you intend to use automatic recall reading tool.
-echo "Starting benchmarking for scene: $LOCATION and queries file: $QUERIES_FILE"
+echo "Starting benchmarking for scene: $LOCATION and queries file: $QUERIES_FILENAME"
 
 for ref in "${devices_ref[@]}"; do
   for query in "${device_query[@]}"; do
@@ -68,7 +68,11 @@ for ref in "${devices_ref[@]}"; do
       echo "Run is using flag --is_rig due to ${query}_query"
     fi
 
-    python -m lamar.run \
+    docker run --rm \
+      -v "$OUTPUT_DIR":/data/output_dir \
+      -v "$CAPTURE_DIR":/data/capture_dir \
+      croco:lamar \
+      python -m lamar.run \
       --scene "$SCENE" \
       --ref_id "${ref}_map" \
       --query_id "${query}_query" \
@@ -76,7 +80,7 @@ for ref in "${devices_ref[@]}"; do
       --feature "$LOCAL_FEATURE_METHOD" \
       --matcher "$MATCHING_METHOD" \
       --capture "$CAPTURE" \
-      --outputs "$OUTPUT" \
+      --outputs "$OUTPUT_DIR" \
       --query_filename "$QUERIES_FILE" \
       $is_rig_flag
 
@@ -85,4 +89,4 @@ for ref in "${devices_ref[@]}"; do
   done
 done
 
-echo -e "Benchmarking completed for scene: $LOCATION and queries file: $QUERIES_FILE"
+echo -e "Benchmarking completed for scene: $LOCATION and queries file: $QUERIES_FILENAME"
