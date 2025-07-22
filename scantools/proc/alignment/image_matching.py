@@ -6,6 +6,7 @@ import numpy as np
 from tqdm import tqdm
 import h5py
 import torch
+import copy
 
 from hloc import extract_features, match_features, pairs_from_retrieval, matchers
 from hloc.match_features import find_unique_new_pairs, WorkQueue
@@ -72,6 +73,8 @@ def subsample_list(keys: List, num: Union[int, float]) -> List:
 
 
 def subsample_poses(keys, T_c2w: Trajectories, conf: KeyFramingConf):
+    logger.info("Original sequence has "+str(len(keys))+" frames.")
+    print(conf)
     max_elapsed_us = conf.max_elapsed * 1e6
     selected = [keys[0]]
     dr_dt = np.array([0., 0.])
@@ -86,6 +89,7 @@ def subsample_poses(keys, T_c2w: Trajectories, conf: KeyFramingConf):
             selected.append(k_i)
     if selected[-1] != keys[-1]:  # always add the last frame
         selected.append(keys[-1])
+    logger.info("Extracted keyframes: "+str(len(selected)))
     return selected
 
 
@@ -109,6 +113,11 @@ def list_images_for_matching(session: Session,
             keys = subsample_list(keys, keyframing.num)
         else:
             assert poses is not None
+            #if "spot" in str(prefix):
+            #    keyframing_spot = copy.deepcopy(keyframing)
+            #    keyframing_spot.max_elapsed = keyframing.max_elapsed*1000
+            #    keys = subsample_poses(keys, poses, keyframing_spot)
+            #else:
             keys = subsample_poses(keys, poses, keyframing)
 
     # Recover the image keys

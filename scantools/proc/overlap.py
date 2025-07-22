@@ -30,7 +30,7 @@ def overlay(overlap: np.ndarray, image: np.ndarray):
 
 
 class OverlapTracer:
-    def __init__(self, renderer: Renderer, stride: int = 1, num_rays: Optional[float] = None):
+    def __init__(self, renderer: Renderer, stride: int = 1, num_rays: Optional[int] = None):
         self.renderer = renderer
         self.stride = stride
         self.num_rays = num_rays

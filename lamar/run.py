@@ -5,14 +5,14 @@ from pprint import pformat
 
 from scantools.capture import Capture
 
-from .tasks import (
+from lamar.tasks import (
     FeatureExtraction, PairSelection, FeatureMatching, Mapping, PoseEstimation, ChunkAlignment)
-from .tasks.chunk_alignment import keys_from_chunks
-from .utils.capture import (
+from lamar.tasks.chunk_alignment import keys_from_chunks
+from lamar.utils.capture import (
     read_query_list, build_chunks, avoid_duplicate_keys_in_chunks,
     rig_list_to_image_list, rig_poses_to_image_poses)
 
-from . import logger
+from lamar import logger
 
 
 def run(outputs: Path,
@@ -24,19 +24,19 @@ def run(outputs: Path,
         matcher: str,
         matcher_query: str = None,
         use_radios: bool = False,
+        is_rig: bool = False,
         sequence_length_seconds: Optional[int] = None,
         num_pairs_loc: int = 10,
         num_pairs_map: int = 10,
         retrieval_mapping: Optional[str] = None,
         filter_pairs_mapping: Optional[Dict] = None,
         do_rig: bool = True,
-        query_filename: str = 'queries.txt'):
+        query_filename: str = 'keyframes_original.txt'):
 
     if matcher_query is None:
         matcher_query = matcher
 
     session_q = capture.sessions[query_id]
-    is_rig = 'hololens' in query_id
     is_sequential = sequence_length_seconds is not None
     if filter_pairs_mapping is None:
         filter_pairs_mapping = {
@@ -75,7 +75,9 @@ def run(outputs: Path,
             'filter_pose': {'do': True, 'num_pairs_filter': 250},
         })
 
-    query_list_path = capture.session_path(query_id) / query_filename
+    logger.info(f"Running query {query_id} with reference {ref_id} using {query_filename}.")
+
+    query_list_path = capture.session_path(query_id) / 'proc' / query_filename
     query_list = image_keys = read_query_list(query_list_path)
     if is_rig and not do_rig:
         rig_query_list = query_list
@@ -127,10 +129,8 @@ def run(outputs: Path,
 
     return results
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--scene', type=str, required=True)
     parser.add_argument('--ref_id', type=str, required=True)
     parser.add_argument('--query_id', type=str, required=True)
     parser.add_argument(
@@ -147,10 +147,14 @@ if __name__ == '__main__':
         '--matcher_query', type=str, choices=list(FeatureMatching.methods))
     parser.add_argument('--use_radios', action='store_true')
     parser.add_argument('--sequence_length_seconds', type=int)
+    parser.add_argument('--is_rig', action='store_true', help="If the session is a rigs-based one")
+    parser.add_argument(
+        '--query_filename', type=str, 
+        choices=['keyframes_original.txt', 'keyframes_pruned.txt', 'keyframes_pruned_subsampled.txt'],
+        default='keyframes_original.txt')
     args = parser.parse_args().__dict__
     scene = args.pop("scene")
-    args['capture'] = Capture.load(args.pop('captures') / scene)
-    args['outputs'] = args['outputs'] / scene
+    args['capture'] = Capture.load(args.pop('captures'))
     results_ = run(**args)
 
     if isinstance(results_, str):

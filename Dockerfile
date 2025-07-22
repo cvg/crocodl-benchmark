@@ -40,6 +40,7 @@ RUN bash /tmp/build_pcdmeshing.sh && rm /tmp/build_pcdmeshing.sh
 #
 # Scantools stage.
 #
+
 FROM common AS scantools
 
 RUN apt-get update && \
@@ -50,7 +51,8 @@ RUN apt-get update && \
         libsm6 \
         libxrender1 \
         libxext6 \
-        libzbar0
+        libzbar0 \
+        ffmpeg
 
 # Install raybender.
 COPY --from=builder /raybender/embree-3.12.2/lib /raybender/embree-3.12.2/lib
@@ -66,6 +68,7 @@ RUN rm -rfv /tmp/*
 
 RUN python3 -m pip install --no-deps \
         astral==3.2 \
+        soupsieve==2.7 \
         beautifulsoup4==4.12.2 \
         lxml==4.9.2 \
         matplotlib \
@@ -76,8 +79,18 @@ RUN python3 -m pip install --no-deps \
         pyzbar-upright==0.1.8 \
         rawpy==0.19.1 \
         scipy==1.11.4 \
-        numpy==1.26.4 \
-        pillow==10.3.0
+        numpy==1.26.3 \
+        pillow==10.3.0 \
+        more_itertools==10.7.0 \
+        cv_bridge==1.13.0.post0 \
+        pyzbar==0.1.9 \
+        rospkg==1.6.0 \
+        h5py==3.10.0 \
+        pyquaternion==0.9.9 
+
+RUN pip install git+https://github.com/brighter-ai/redact-client.git
+RUN python3 -m pip install torch==2.7.1 torchvision==0.22.1 --index-url https://download.pytorch.org/whl/cpu
+RUN python3 -m pip install bagpy==0.5
 
 RUN cd lamar && python3 -m pip install -e .[scantools] --no-deps
 WORKDIR /lamar
@@ -150,8 +163,11 @@ RUN python3 -m pip install --no-deps \
         numpy==1.26.3 \
         torch>=1.1 \
         tqdm>=4.36.0 \
+        plyfile==1.0.3 \
+        open3d==0.18.0 \
         pycolmap==0.4.0 \
         scikit-learn==1.5.2
 
-RUN cd /lamar && python3 -m pip install -e .  --no-deps
+RUN cd /lamar && python3 -m pip install -e . --no-deps
+
 WORKDIR /lamar

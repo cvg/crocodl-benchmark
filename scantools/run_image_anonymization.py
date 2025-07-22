@@ -1,3 +1,4 @@
+import os
 import argparse
 from pathlib import Path
 from typing import Optional, List, Dict
@@ -11,7 +12,6 @@ from . import logger
 from .capture import Capture, Session, KeyType
 from .proc.anonymization import BaseAnonymizer, EgoBlurAnonymizer, BrighterAIAnonymizer
 from .viz.image import plot_images
-
 
 def plot_blurring(blurred: np.ndarray, mask: np.ndarray, detections: List):
     if len(detections) == 0:
@@ -80,81 +80,118 @@ def split_sequences(groups: Dict[str, List[KeyType]], session: Session,
         groups_out[f'{id_}/{group_index}'] = group_keys
     return groups_out
 
-
-def run(capture: Capture, session_id: str, apikey: Optional[str] = None,
-        output_path: Optional[Path] = None, num_parallel: int = 16,
-        sequential: bool = False, device: str = None):
-    session = capture.sessions[session_id]
-    if session.images is None:
-        return
-
-    if output_path is None:
+def run(capture: Capture, session_id: str = None, apikey: Optional[str] = None,
+        num_parallel: int = 16, sequential: bool = False, device: str = None, 
+        inplace: bool = False, overwrite: bool = False):
+    
+    if inplace:
         logger.info('Will run image anonymization in place.')
+        output_path = None
 
-    if apikey is None:
-        if sequential:
-            raise ValueError('Sequential mode is not supported by Ego Blur.')
-        anonymizer = EgoBlurAnonymizer(device=device)
-        num_parallel = 1
-        anon_dirname = 'anonymization_egoblur'
+    if session_id == None:
+        sessions = []
+        for session_id in capture.sessions.keys():
+            sessions.append(capture.sessions[session_id])
     else:
-        anonymizer = BrighterAIAnonymizer(apikey, single_frame_optimized=not sequential)
-        anon_dirname = 'anonymization_brighterai'
+        sessions = [capture.sessions[session_id]]
 
-    all_keys = list(session.images.key_pairs())
-    # Split the keys by subsequence.
-    key_groups = {}
-    if session.proc is None or session.proc.subsessions is None:
-        key_groups[session_id] = all_keys
-    else:
-        for subid in session.proc.subsessions:
-            key_groups[subid] = []
-            for k in all_keys:
-                if k[1].startswith(subid):
-                    key_groups[subid].append(k)
-    if not isinstance(anonymizer, EgoBlurAnonymizer):
-        key_groups = split_sequences(key_groups, session, capture, sequential)
-    assert len(all_keys) == sum(map(len, key_groups.values()))
-
-    worker_args = []
-    for id_, keys in key_groups.items():
-        if len(keys) == 0:
-            continue
-        tmp_dir = capture.path / anon_dirname / session_id / id_
-        worker_args.append((keys, tmp_dir))
-
-    def _worker_fn(_args):
-        _keys, _tmp_dir = _args
-        return blur_image_group(
-            capture, session, _keys, _tmp_dir, anonymizer, output_path)
-
-    if num_parallel > 1 and len(key_groups) > 1:
-        map_ = functools.partial(thread_map, max_workers=num_parallel)
-    elif len(key_groups) > 1:
-        map_ = lambda f, x: list(map(f, tqdm(x)))
-    else:
-        map_ = lambda f, x: list(map(f, x))
-    counts = map_(_worker_fn, worker_args)
-    counter = Counter()
     failures = []
-    for c, (key, tmp_dir) in zip(counts, worker_args):
-        if c is None:
-            logger.warning('Anynonymization failed for (%s, %s)', key, tmp_dir)
-            failures.append(tmp_dir)
-            continue
-        counter += c
-    logger.info('Detected %s in %d images.', str(dict(counter)), len(all_keys))
-    return failures
 
+    for session in sessions:
+
+        if session.images is None:
+            continue
+        
+        session_id = session.id
+        logger.info(f"Anonymizing session {session_id}.")
+        
+        if "map" in session_id or "query" in session_id:
+            logger.info(f"Skipping session {session_id} as it is a map or query session.")
+            continue
+
+        if apikey is None:
+            if sequential:
+                raise ValueError('Sequential mode is not supported by Ego Blur.')
+            anonymizer = EgoBlurAnonymizer(device=device)
+            num_parallel = 1
+            anon_dirname = 'anonymization_egoblur'
+        else:
+            anonymizer = BrighterAIAnonymizer(apikey, single_frame_optimized=not sequential)
+            anon_dirname = 'anonymization_brighterai'
+
+        if not inplace:
+            output_path = capture.path / anon_dirname / session_id
+
+        if not overwrite:
+            if "+" in session_id:
+                all_exist = True
+                navvis_session_id = session_id.split('+')
+                for navvis_id in navvis_session_id:
+                    if not os.path.exists(capture.path / anon_dirname / navvis_id):
+                        all_exist = False
+                if all_exist:
+                    logger.info(f"Anonymization path {capture.path / anon_dirname / session_id} already exists. Skipping.")
+                    continue
+            elif os.path.exists(capture.path / anon_dirname / session_id):
+                logger.info(f"Anonymization path {capture.path / anon_dirname / session_id} already exists. Skipping.")
+                continue
+
+        all_keys = list(session.images.key_pairs())
+        # Split the keys by subsequence.
+        key_groups = {}
+        if session.proc is None or session.proc.subsessions is None:
+            key_groups[session_id] = all_keys
+        else:
+            for subid in session.proc.subsessions:
+                key_groups[subid] = []
+                for k in all_keys:
+                    if k[1].startswith(subid):
+                        key_groups[subid].append(k)
+        if not isinstance(anonymizer, EgoBlurAnonymizer):
+            key_groups = split_sequences(key_groups, session, capture, sequential)
+        assert len(all_keys) == sum(map(len, key_groups.values()))
+
+        worker_args = []
+        for id_, keys in key_groups.items():
+            if len(keys) == 0:
+                continue
+            tmp_dir = capture.path / anon_dirname / id_
+            worker_args.append((keys, tmp_dir))
+
+        def _worker_fn(_args):
+            _keys, _tmp_dir = _args
+            return blur_image_group(
+                capture, session, _keys, _tmp_dir, anonymizer, output_path)
+
+        if num_parallel > 1 and len(key_groups) > 1:
+            map_ = functools.partial(thread_map, max_workers=num_parallel)
+        elif len(key_groups) > 1:
+            map_ = lambda f, x: list(map(f, tqdm(x)))
+        else:
+            map_ = lambda f, x: list(map(f, x))
+        counts = map_(_worker_fn, worker_args)
+        counter = Counter()
+        for c, (key, tmp_dir) in zip(counts, worker_args):
+            if c is None:
+                logger.warning('Anynonymization failed for (%s, %s)', key, tmp_dir)
+                failures.append(tmp_dir)
+                continue
+            counter += c
+        logger.info('Detected %s in %d images.', str(dict(counter)), len(all_keys))
+
+    return failures
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      argument_default=argparse.SUPPRESS)
+    
     parser.add_argument('--capture_path', type=Path, required=True)
-    parser.add_argument('--session_id', type=str, required=True)
+    parser.add_argument('--session_id', type=str)
     parser.add_argument('--apikey', type=str)
     parser.add_argument('--sequential', action='store_true')
-    parser.add_argument('--output_path', type=Path)
+    parser.add_argument('--inplace', action='store_true')
+    parser.add_argument('--overwrite', action='store_true')
+
     args = parser.parse_args().__dict__
-    args['capture'] = Capture.load(args.pop('capture_path'), session_ids=[args['session_id']])
+    args['capture'] = Capture.load(args.pop('capture_path'))
     run(**args)

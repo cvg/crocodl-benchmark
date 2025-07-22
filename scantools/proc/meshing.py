@@ -1,4 +1,5 @@
 import logging
+import multiprocessing
 from pathlib import Path
 from typing import Tuple, Dict, Optional, Iterable, Callable
 import open3d as o3d
@@ -73,7 +74,6 @@ def simplify_mesh(mesh, factor, max_error):
     mesh = mesh.simplify_quadric_decimation(target_size, maximum_error=max_error)
     return mesh
 
-
 def mesh_from_pointcloud(pcd: o3d.geometry.PointCloud,
                          method: str = 'poisson',
                          psr_depth: int = 12,
@@ -81,10 +81,11 @@ def mesh_from_pointcloud(pcd: o3d.geometry.PointCloud,
                          psr_densities_thresh_ratio: float = 0.01,
                          psr_densities_thresh_res: Optional[float] = None,
                          af_visibility_dir: Optional[Path] = None,
-                         af_num_parallel: int = 10,
+                         af_num_parallel: int = multiprocessing.cpu_count(),
                          simplify_factor: Optional[int] = None,
                          simplify_error: Optional[float] = 1e-9,
                          ) -> Tuple[o3d.geometry.TriangleMesh, Dict]:
+    
     debug = {}
     simplified = None
     simplify = None

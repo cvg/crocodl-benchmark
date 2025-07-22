@@ -49,6 +49,18 @@ conf_ios = dict(
     ),
 )
 
+conf_spot = dict(
+    localizer=dict(
+        pnp_error_multiplier=1.0,
+    ),
+    pgo=dict(
+        rel_noise_tracking=0.01,
+    ),
+    ba=dict(
+        rel_noise_tracking=0.01,
+    ),
+)
+
 
 def run(capture: Capture, ref_id: str, query_id: str, conf: Conf,
         overwrite: bool = False, vis_mesh_id: str = 'mesh',

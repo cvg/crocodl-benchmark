@@ -3,6 +3,10 @@
 root_folder=$(realpath $(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/..)
 source ${root_folder}/scripts/load_env.sh
 
+mkdir -p ${root_folder}/external
+cd ${root_folder}/external
+sudo rm -rf ${root_folder}/external/colmap_v3.8
+
 apt-get install -y --no-install-recommends --no-install-suggests \
     libboost-program-options-dev \
     libboost-filesystem-dev \

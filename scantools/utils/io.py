@@ -8,6 +8,15 @@ logger = logging.getLogger(__name__)
 CSV_COMMENT_CHAR = '#'
 DEPTH_SCALE = 1000.
 
+def read_sequence_list(path) -> List[str]:
+    sequences = []
+    with open(path, 'r') as fid:
+        for line in fid.read().split('\n'):
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            sequences.append(line.split('#')[0].strip())
+    return sequences
 
 def read_csv(path: Path, expected_columns: Optional[List[str]] = None) -> List[List[str]]:
     if not path.exists():

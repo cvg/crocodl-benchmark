@@ -24,6 +24,7 @@ class RefinementConf(BaseConf):
     keyframings: Dict[Session.Device, KeyFramingConf] = dataclasses.field(default_factory=lambda: {
         Session.Device.HOLOLENS: None,
         Session.Device.PHONE: None,
+        Session.Device.SPOT: None,
     })
     keyframing: KeyFramingConf = dataclasses.field(default_factory=KeyFramingConf)
 
@@ -34,6 +35,7 @@ class RefinementConf(BaseConf):
     rel_noise_tracking: Dict[Session.Device, float] = dataclasses.field(default_factory=lambda: {
         Session.Device.HOLOLENS: 0.01,
         Session.Device.PHONE: 0.05,
+        Session.Device.SPOT: 0.03,
     })
 
     matching_seq_ref: MatchingConf = None

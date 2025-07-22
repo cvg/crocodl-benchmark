@@ -19,6 +19,11 @@ def get_session_date(session_id):
         date = session_id.split('_', 1)[1].rsplit('_', 1)[0]
         date = datetime.datetime.strptime(date, '%Y-%m-%d_%H.%M.%S')
         date = city.tzinfo.localize(date)
+    elif device == Device.SPOT:
+        date = session_id.split('_', 1)[1].rsplit('_', 1)[0]
+        date = datetime.datetime.strptime(date, '%Y-%m-%d-%H-%M')
+        date = date.replace(tzinfo=datetime.timezone.utc)  # is in UTC
+        date = date.astimezone(city.tzinfo)  # convert to local time
     elif device == Device.NAVVIS:
         date = datetime.datetime.strptime(session_id, '%Y-%m-%d_%H.%M.%S')
         date = city.tzinfo.localize(date)

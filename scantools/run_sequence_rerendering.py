@@ -95,11 +95,11 @@ def run(capture: Capture, ref_id: str, query_id: str, skip: int):
     session_q = capture.sessions[query_id]
 
     logger.info('Generating interactive visualization diffs by rendering.')
-    mesh = read_mesh(capture.proc_path(ref_id) / session_ref.proc.meshes['mesh'])
+    mesh = read_mesh(capture.proc_path(ref_id) / session_ref.proc.meshes['mesh_simplified'])
     renderer = Renderer(mesh)
     trajectory = session_q.proc.alignment_trajectories
     if T_mesh2global is not None:
-        trajectory = T_mesh2global.inv() * trajectory
+        trajectory = T_mesh2global.inv * trajectory
 
     # Set up plot.
     # Adjust bottom to make room for Buttons
@@ -134,6 +134,7 @@ def run(capture: Capture, ref_id: str, query_id: str, skip: int):
     bquit = Button(axquit, 'Quit')
     bquit.on_clicked(callback.quit)
 
+    #compare(callback.render_img, callback.raw_img, cmap="gray", start_mode="horizontal", start_slider_pos=0.5)
     # Show
     plt.show()
 

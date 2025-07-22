@@ -17,7 +17,6 @@ from ...utils.io import read_csv, convert_dng_to_jpg
 
 logger = logging.getLogger(__name__)
 
-
 class NavVis:
     def __init__(self, input_path: Path, output_path: Optional[Path] = None,
                  tiles_format: str = "none", upright: bool = False,

@@ -9,7 +9,6 @@ from .capture import (
     RecordsCamera, RecordsDepth, RecordsLidar, RecordsWifi, RecordsBluetooth)
 from .proc.alignment.image_matching import KeyFramingConf, subsample_poses
 
-
 def prefixed_id(sensor_or_rig_id, session_id):
     return f'{session_id}/{sensor_or_rig_id}'
 
@@ -54,6 +53,7 @@ def copy_session(session: Session, session_id: str, dst: Session,
         dst.trajectories[ts, new_ids[sensor_or_rig_id]] = pose
 
     # Copy ground truth trajectories
+    # overwrite_poses = True for map
     if dst.proc is None:
         dst.proc = Proc()
     if not overwrite_poses and aligned:
@@ -186,8 +186,6 @@ def run(capture: Capture,
             dst_path.parent.mkdir(exist_ok=True, parents=True)
             dst_path.symlink_to(
                 osp.relpath(capture.proc_path(reference_id) / mesh_subpath, dst_path.parent))
-
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)

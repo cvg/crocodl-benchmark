@@ -147,4 +147,18 @@ class RetrievalFeatureExtraction(FeatureExtraction):
                 'preprocessing': {'resize_max': 640},
             }
         },
+        'megaloc': {
+            'name': 'megaloc',
+            'hloc': {
+                'model': {'name': 'megaloc'},
+                'preprocessing': {'resize_max': 640},
+            }
+        },
+        'salad': {
+            'name': 'salad',
+            'hloc': {
+                'model': {'name': 'salad'},
+                'preprocessing': {'resize_max': 640},
+            }
+        },
     }

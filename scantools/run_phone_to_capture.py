@@ -4,6 +4,7 @@ from typing import Dict, Tuple, List, Optional
 import shutil
 import subprocess
 
+import os
 import numpy as np
 import cv2
 from tqdm import tqdm
@@ -320,12 +321,13 @@ def timestamps_to_session(timestamps: List[int],
     capture.sessions[session_id] = session
 
 
-def run(input_path: Path,
-        capture: Capture,
-        session_id: str,
-        visualize: bool = False,
-        downsample_framerate: Optional[float] = 5,
-        split_sequence_on_failure: bool = True) -> List[str]:
+def phone_to_capture(input_path: Path,
+                     capture: Capture,
+                     session_id: str,
+                     visualize: bool = False,
+                     downsample_framerate: Optional[float] = 5,
+                     split_sequence_on_failure: bool = True) -> List[str]:
+    
     assert session_id not in capture.sessions, session_id
 
     images_as_video = (input_path / 'images.mp4').exists()
@@ -365,21 +367,50 @@ def run(input_path: Path,
                 camera = session.sensors[camera_id]
                 mlp.add_camera(f'{ts}/{camera_id}', camera, pose)
                 mlp.add_trajectory_point(chunk_id, pose)
-
+            
     capture.save(capture.path, session_ids=chunk_ids)
     if visualize:
         mlp.write(mlp_path)
     if images_as_video:
         shutil.rmtree(image_dir)
+
     return chunk_ids
 
+def run(input_path: Path,
+        capture: Capture,
+        visualize: bool = False,
+        downsample_framerate: Optional[float] = 5,
+        split_sequence_on_failure: bool = True):
+    
+    """
+    Transforms every raw phone session in inpput_path and transforms it into phone capture session inside capture.sessions_path().
+    """
+
+    sessions = [
+        (Path(name), "ios_" + name) for name in os.listdir(input_path)
+        if os.path.isdir(os.path.join(input_path, name))
+    ]
+
+    for session, session_id in sessions:
+        logger.info(f"Processing session: {session}")
+        try:
+            phone_to_capture(input_path=input_path / session, 
+                             capture=capture, 
+                             session_id=session_id,
+                             visualize=visualize,
+                             downsample_framerate=downsample_framerate,
+                             split_sequence_on_failure=split_sequence_on_failure)
+        except Exception as e:
+            error = f"[ERROR] Failed to process session {session}: {e}"
+            logger.warning(error)
+        
+        break
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--input_path', type=Path, required=True)
-    parser.add_argument('--capture_path', type=Path, required=True)
-    parser.add_argument('--session_id', type=str, required=True)
-    parser.add_argument('--visualize', action='store_true')
+    parser.add_argument('--input_path', type=Path, required=True, help="Folder of raw phone sessions")
+    parser.add_argument('--capture_path', type=Path, required=True, help="Capture folder where sessions folder is located.")
+    parser.add_argument('--visualize', action='store_true', help="Visualize output.")
     args = parser.parse_args().__dict__
     args['capture'] = Capture.load(args.pop('capture_path'))
     run(**args)

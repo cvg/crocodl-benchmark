@@ -143,13 +143,13 @@ class EgoBlurAnonymizer(BaseAnonymizer):
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.device = device
 
-        hub_dir = torch.hub.get_dir()
-        face_path = Path(hub_dir, 'ego_blur_face.jit')
+        anonym_path = Path(__file__).parent.parent.parent / 'anonymization'
+        face_path = Path(anonym_path, 'ego_blur_face.jit')
         if not face_path.exists():
             raise FileNotFoundError(
                 f'Could not find the EgoBlur Face model at {face_path}. '
                 'Download it from https://www.projectaria.com/tools/egoblur/')
-        lp_path = Path(hub_dir, 'ego_blur_lp.jit')
+        lp_path = Path(anonym_path, 'ego_blur_lp.jit')
         if not face_path.exists():
             raise FileNotFoundError(
                 f'Could not find the EgoBlur License Plate model at {lp_path}. '
@@ -199,7 +199,12 @@ class EgoBlurAnonymizer(BaseAnonymizer):
         for idx, image_path in enumerate(tqdm(input_paths)):
             image = read_image(image_path)
             if labels_cached is None:
-                image_tensor = torch.from_numpy(np.transpose(image, (2, 0, 1))).flip(0)
+                if image.ndim == 3:
+                    image_tensor = torch.from_numpy(np.transpose(image, (2, 0, 1)).copy()).flip(0)
+                elif image.ndim == 2:
+                    image_tensor = torch.from_numpy(image.copy()).unsqueeze(0).flip(0)
+                else:
+                    raise ValueError(f"Unexpected image shape: {image.shape}")
                 image_tensor = image_tensor.to(self.device)
                 faces = self.get_detections(self.face_detector, image_tensor)
                 plates = self.get_detections(self.lp_detector, image_tensor,

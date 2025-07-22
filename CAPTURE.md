@@ -36,7 +36,7 @@ location1/                                  # a Capture directory
 │   ├── hololens1/
 │   │   ├── bt.txt
 │   │   ├── depths.txt                      # list of depth maps with their paths
-│   │   ├── images.txt
+│   │   ├── images.txt      
 │   │   ├── rigs.txt
 │   │   ├── sensors.txt
 │   │   ├── trajectories.txt

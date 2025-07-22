@@ -20,7 +20,6 @@ class FeatureMatchingPaths:
         self.matches = self.workdir / 'matches.h5'
         self.config = self.workdir / 'configuration.json'
 
-
 class FeatureMatching:
     methods = {
         'superglue': {
@@ -30,6 +29,15 @@ class FeatureMatching:
                     'name': 'superglue',
                     'weights': 'outdoor',
                     'sinkhorn_iterations': 5,
+                },
+            },
+        },
+        'lightglue': {
+            'name': 'lightglue',
+            'hloc': {
+                'model': {
+                    'name': 'lightglue',
+                    'features': 'superpoint',
                 },
             },
         },
@@ -77,6 +85,7 @@ class FeatureMatching:
                  extraction: FeatureExtraction,
                  extraction_ref: Optional[FeatureExtraction] = None,
                  overwrite=False):
+        
         extraction_ref = extraction_ref or extraction
         if extraction.config['name'] != extraction_ref.config['name']:
             raise ValueError('Matching two different features: '
@@ -91,6 +100,7 @@ class FeatureMatching:
             'features': extraction.config,  # detect upstream changes
             # do not include the pairs so the same file can be reused
         }
+            
         self.query_id = query_id
         self.ref_id = ref_id
         self.extraction = extraction
@@ -104,6 +114,7 @@ class FeatureMatching:
         if not same_configs(config, self.paths.config):
             logger.warning('Existing matches will be overwritten.')
             overwrite = True
+
         match_features.main(
             config['hloc'],
             pair_selection.paths.pairs_hloc,

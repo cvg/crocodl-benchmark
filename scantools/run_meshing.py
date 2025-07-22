@@ -4,7 +4,7 @@ import inspect
 
 from . import logger
 from .capture import Capture, Proc
-from .proc.meshing import mesh_from_pointcloud, simplify_mesh
+from .proc.meshing import mesh_from_pointcloud
 from .utils.io import read_pointcloud, write_mesh
 
 

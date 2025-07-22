@@ -6,8 +6,7 @@ from scantools import logger, run_combine_navvis_sessions
 from scantools.capture import Capture
 from scantools import (
     run_navvis_to_capture, run_meshing, run_rendering, to_meshlab_visualization,
-    run_scan_aligner, run_pose_graph_optimizer)
-
+    run_scan_aligner, run_pose_graph_optimizer, run_reference_triangulation)
 
 conf_matcher = {'output': 'matches-superglue',
                 'model': {'name': 'superglue', 'weights': 'outdoor', 'sinkhorn_iterations': 5}}
@@ -21,8 +20,7 @@ align_conf = run_scan_aligner.Conf.from_dict(dict(
 ))
 align_conf.matching.global_features['preprocessing']['resize_max'] = 1024
 
-
-def main(capture_path: Path, session_ids: List[str], navvis_dir: Path):
+def main(capture_path: Path, session_ids: List[str], navvis_dir: Path, num_workers: int = 10):
     if capture_path.exists():
         capture = Capture.load(capture_path)
     else:
@@ -36,14 +34,16 @@ def main(capture_path: Path, session_ids: List[str], navvis_dir: Path):
     for session in session_ids:
         if session not in capture.sessions:
             logger.info('Exporting NavVis session %s.', session)
+        
             run_navvis_to_capture.run(
                 navvis_dir / session, capture, tiles_format, session,
-                downsample_max_edge=downsample_max_edge)
+                downsample_max_edge=downsample_max_edge,
+                copy_pointcloud=True, num_workers=num_workers)
 
         if (not capture.sessions[session].proc
                 or mesh_id not in capture.sessions[session].proc.meshes):
             logger.info('Meshing session %s.', session)
-            run_meshing.run(capture, session, 'point_cloud_final', mesh_id, method=meshing_method)
+            run_meshing.run(capture, session, 'point_cloud_final', mesh_id, method=meshing_method, af_num_parallel=num_workers)
 
         if not capture.sessions[session].depths:
             logger.info('Rendering session %s.', session)
@@ -52,7 +52,7 @@ def main(capture_path: Path, session_ids: List[str], navvis_dir: Path):
         to_meshlab_visualization.run(
             capture, session, f'trajectory_{session}', export_mesh=True, export_poses=True,
             mesh_id=mesh_id)
-
+        
     for i, ref_id in enumerate(session_ids):
         for query_id in session_ids[i+1:]:
             if ('icp', ref_id) in capture.sessions[query_id].proc.alignment_global:
@@ -69,8 +69,11 @@ def main(capture_path: Path, session_ids: List[str], navvis_dir: Path):
             capture, session_ids, export_combined_pointcloud=True,
             export_depths=True, export_meshes=True)
         logger.info('Meshing combined session %s.', session_id)
-        run_meshing.run(
-            capture, session_id, 'point_cloud_combined', 'mesh', method=meshing_method)
+        run_meshing.run(capture, session_id, 'point_cloud_combined', 'mesh', method=meshing_method, af_num_parallel=num_workers)
+    
+    if len(session_ids) > 1: session_ids.append('+'.join(session_ids))
+    for ref_id in session_ids:
+         run_reference_triangulation.run(capture=capture, ref_id=ref_id)
 
 
 if __name__ == '__main__':
@@ -78,6 +81,7 @@ if __name__ == '__main__':
     parser.add_argument('--capture_path', type=Path, required=True)
     parser.add_argument('--input_path', type=Path, required=True)
     parser.add_argument('--sessions', nargs='+', type=str, required=True)
+    parser.add_argument('--num_workers', type=int, required=False, default=5)
     args = parser.parse_args()
 
-    main(args.capture_path, args.sessions, args.input_path)
+    main(args.capture_path, args.sessions, args.input_path, args.num_workers)

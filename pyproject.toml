@@ -1,8 +1,8 @@
 [project]
-name = "lamar"
-description = "LaMAR: Benchmarking Localization and Mapping for Augmented Reality"
+name = "crocodl"
+description = "CroCoDL: Cross-device Collaborative Dataset for Localization"
 version = "1.0"
-authors = [{name = "Microsoft"}]
+authors = [{name = "TBD"}]
 readme = "README.md"
 requires-python = ">=3.9"
 license = {file = "LICENSE-CODE"}
@@ -11,33 +11,50 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+
 dependencies = [
     "h5py==3.10.0",
     "numpy==1.26.3",
     "torch>=1.1",
     "tqdm>=4.36.0",
     "pycolmap==0.4.0",
+    "plyfile==1.0.3",
+    "open3d==0.18.0",
     "scikit-learn==1.5.2", # is needed for hloc
+    "pytorch_metric_learning==2.8.1" # is needed for salad
+    "pytorch_lightning==2.5.2" # is needed for salad
     "pyceres @ git+https://github.com/cvg/pyceres.git@v1.0",
 ]
+
 urls = {Repository = "https://github.com/microsoft/lamar-benchmark"}
 
 [project.optional-dependencies]
 scantools = [
     "astral==3.2",
+    "soupsieve==2.7",
     "beautifulsoup4==4.12.2",
     "lxml==4.9.2",
     "matplotlib==3.8.2",
-    "open3d==0.18.0",
     "opencv-python==4.7.0.72",
-    "plyfile==1.0.3",
     "pytijo==0.0.2",
     "pyzbar-upright==0.1.8",
     "rawpy==0.19.1",
     "scipy==1.11.4",
     "numpy==1.26.3",
     "pillow==10.3.0",
+    "more_itertools==10.7.0",
+    "cv_bridge==1.13.0.post0",
+    "pyzbar==0.1.9",
+    "bagpy==0.5",
+    "rospkg==1.6.0",
+    "pyquaternion==0.9.9",
+    "jupyter_compare_view==0.2.4", 
+    "ipykernel==6.29.5",
+    "redact @ git+https://github.com/brighter-ai/redact-client.git",
+    "torch==2.7.1",
+    "torchvision==0.22.1"
 ]
+
 dev = [
     "pytest",
     "pytest-cov",
