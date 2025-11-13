@@ -1,3 +1,3 @@
-from typing import Tuple
+from typing import Optional, Union, Tuple
 
-KeyType = Tuple[int, str]
+KeyType = Optional[Union[Tuple[int, str], Tuple[str, str]]]

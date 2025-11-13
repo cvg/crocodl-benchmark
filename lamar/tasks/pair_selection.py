@@ -8,7 +8,7 @@ from scantools.utils.configuration import BaseConf
 
 from .feature_extraction import RetrievalFeatureExtraction
 from ..utils.capture import list_images_for_session
-from ..utils.misc import same_configs, write_config
+from ..utils.misc import same_configs, write_config, same_keyframes, write_keyframes
 from ..utils.retrieval import (
     FrustumFilterConf, RadioFilterConf, PoseFilterConf,
     compute_overlap_pairs, fused_retrieval,
@@ -35,7 +35,7 @@ class PairSelectionConf(BaseConf):
         name = self.method['name']
         if name == 'fusion':
             name += '-' + '-'.join(c['name'] for c in self.method['retrieval'])
-        name += f'-{self.num_pairs}'
+        # name += f'-{self.num_pairs}'
         if self.filter_frustum.do:
             name += '_frustum'
         if self.filter_pose.do:
@@ -58,6 +58,7 @@ class PairSelectionPaths:
         self.retrieval = self.workdir / 'retrieval.txt'
         self.pairs_hloc = self.workdir / 'pairs.txt'
         self.config = self.workdir / 'configuration.json'
+        self.keyframes = self.workdir / 'keyframes.json'
 
 
 class PairSelection:
@@ -86,7 +87,8 @@ class PairSelection:
         self.paths = PairSelectionPaths(outputs, config, query_id, ref_id, override_workdir_root)
         self.query_keys = query_keys
         self.paths.workdir.mkdir(parents=True, exist_ok=True)
-        overwrite = not same_configs(config.to_dict(), self.paths.config)
+        overwrite = not same_configs(config.to_dict(), self.paths.config) \
+            or not same_keyframes(query_keys, self.paths.keyframes)
         if overwrite:
             logger.info('Selecting image pairs with %s for sessions (%s, %s).',
                         config.name, query_id, ref_id)
@@ -94,6 +96,7 @@ class PairSelection:
             save_retrieval(self.retrieval, self.paths.retrieval)
             save_pairs(self.pairs, self.paths.pairs_hloc)
             write_config(config.to_dict(), self.paths.config)
+            write_keyframes(query_keys, self.paths.keyframes)
         else:
             self.retrieval = load_retrieval(self.paths.retrieval)
             self.pairs = load_pairs(self.paths.pairs_hloc)

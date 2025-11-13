@@ -6,7 +6,7 @@ from hloc import match_features
 
 from .feature_extraction import FeatureExtraction
 from .pair_selection import PairSelection
-from ..utils.misc import same_configs, write_config
+from ..utils.misc import same_configs, write_config, same_keyframes, write_keyframes
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +19,7 @@ class FeatureMatchingPaths:
         self.workdir = root / 'matching' / query_id / ref_id / feature_name / matches_name
         self.matches = self.workdir / 'matches.h5'
         self.config = self.workdir / 'configuration.json'
+        self.keyframes = self.workdir / 'keyframes.json'
 
 class FeatureMatching:
     methods = {
@@ -84,6 +85,7 @@ class FeatureMatching:
                  pair_selection: PairSelection,
                  extraction: FeatureExtraction,
                  extraction_ref: Optional[FeatureExtraction] = None,
+                 query_keys = None,
                  overwrite=False):
         
         extraction_ref = extraction_ref or extraction
@@ -100,6 +102,7 @@ class FeatureMatching:
             'features': extraction.config,  # detect upstream changes
             # do not include the pairs so the same file can be reused
         }
+        self.config['hloc']['model']['features'] = extraction.config['hloc']['model']['name']
             
         self.query_id = query_id
         self.ref_id = ref_id
@@ -111,7 +114,7 @@ class FeatureMatching:
 
         logger.info('Matching local features with %s for sessions (%s, %s).',
                     config['name'], query_id, ref_id)
-        if not same_configs(config, self.paths.config):
+        if not same_configs(config, self.paths.config) or not same_keyframes(query_keys, self.paths.keyframes):
             logger.warning('Existing matches will be overwritten.')
             overwrite = True
 
@@ -125,3 +128,4 @@ class FeatureMatching:
         )
 
         write_config(config, self.paths.config)
+        write_keyframes(query_keys, self.paths.keyframes)

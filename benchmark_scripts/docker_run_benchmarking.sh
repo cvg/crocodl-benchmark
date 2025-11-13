@@ -24,12 +24,44 @@ if [ -z "$CAPTURE_DIR" ]; then
   exit 1
 fi
 
-LOCATIONS=("HYDRO")
-OUTPUT_DIR="benchmarking_ps"
+# SETUP DOCKER
+docker volume create hf_cache >/dev/null 2>&1 || true
+docker volume create torch_cache >/dev/null 2>&1 || true
+docker volume create models >/dev/null 2>&1 || true
+
+# Standard cache envs for Transformers/Torch
+## Cache
+export HF_HOME=/root/.cache/huggingface
+export TRANSFORMERS_CACHE=/root/.cache/huggingface
+export TORCH_HOME=/root/.cache/torch
+
+# Compose cache flags once to reuse in every docker run
+CACHE_FLAGS="-e HF_HOME=$HF_HOME -e TRANSFORMERS_CACHE=$TRANSFORMERS_CACHE -e TORCH_HOME=$TORCH_HOME \
+  -v hf_cache:$HF_HOME -v torch_cache:$TORCH_HOME -v models:/models"
+
+## RAM, GPU
+DOCKER_SHARE_RAM=8g
+DOCKER_GPU="--gpus all"  # empty string or "--gpus all"
+
+## MOUNT SOURCE
+LAMAR_SRC="./lamar"
+HLOC_SRC="./external/hloc"
+MOUNT_LAMAR_SRC=""
+MOUNT_HLOC_SRC=""
+if [ -d "$LAMAR_SRC" ]; then
+  MOUNT_LAMAR_SRC="-v $LAMAR_SRC:/lamar/lamar"
+fi
+if [ -d "$HLOC_SRC" ]; then
+  MOUNT_HLOC_SRC="-v $HLOC_SRC:/external/hloc"
+fi
+
+# BENCHMARKING CONFIGURATION
+LOCATIONS=("ARCHE_D2")
+OUTPUT_DIR="long/benchmarking_results"
 QUERIES_FILE="keyframes_pruned_subsampled.txt"
 LOCAL_FEATURE_METHOD="superpoint"
 MATCHING_METHOD="lightglue"
-GLOBAL_FEATURE_METHOD="netvlad"
+GLOBAL_FEATURE_METHOD="megaloc"
 DEVICES_REF=("ios" "hl" "spot")
 DEVICES_QUERY=("ios" "hl" "spot")
 
@@ -44,12 +76,12 @@ echo "  Global feature method: ${GLOBAL_FEATURE_METHOD}"
 echo "  Reference devices: ${DEVICES_REF[@]}"
 echo "  Query devices: ${DEVICES_QUERY[@]}"
 
-read -p "Do you want to continue? (y/n): " answer
+# read -p "Do you want to continue? (y/n): " answer
 
-if [[ ! "$answer" =~ ^[Yy]$ ]]; then
-    echo "Execution aborted."
-    exit 1
-fi
+# if [[ ! "$answer" =~ ^[Yy]$ ]]; then
+#     echo "Execution aborted."
+#     exit 1
+# fi
 
 for LOCATION in "${LOCATIONS[@]}"; do
 
@@ -70,9 +102,14 @@ for LOCATION in "${LOCATIONS[@]}"; do
       fi
 
       docker run --rm \
-        -v "$OUTPUT_DIR":/data/output_dir \
+        $DOCKER_GPU \
+        $CACHE_FLAGS \
+        --shm-size="$DOCKER_SHARE_RAM" \
+        $MOUNT_LAMAR_SRC \
+        $MOUNT_HLOC_SRC \
+        -v "$OUTPUT_DIR_LOCATION":/data/output_dir \
         -v "$CAPTURE":/data/capture_dir \
-        croco:lamar \
+        croco:long \
         python -m lamar.run \
         --scene "$SCENE" \
         --ref_id "${ref}_map" \

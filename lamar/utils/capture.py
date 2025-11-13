@@ -43,7 +43,7 @@ def list_images_for_session(capture, session_id, query_keys=None):
 def list_trajectory_keys_for_session(capture, session_id, query_keys=None):
     if query_keys:
         return query_keys
-    return capture.session[session_id].trajectories.key_pairs()
+    return capture.sessions[session_id].trajectories.key_pairs()
 
 
 def read_query_list(path):

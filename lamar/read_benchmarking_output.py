@@ -113,7 +113,6 @@ def find_recall_lines(
     """
     Reads input file, finds recall lines, and if conf_matrix flag is set, prints out confusion matrices.
     """
-
     if not os.path.isfile(file_path):
         print(f"Error: File '{file_path}' not found.")
         return

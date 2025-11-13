@@ -2,10 +2,10 @@
 name = "crocodl"
 description = "CroCoDL: Cross-device Collaborative Dataset for Localization"
 version = "1.0"
-authors = [{name = "TBD"}]
+authors = [{ name = "TBD" }]
 readme = "README.md"
 requires-python = ">=3.9"
-license = {file = "LICENSE-CODE"}
+license = { file = "LICENSE-CODE" }
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -20,11 +20,12 @@ dependencies = [
     "pycolmap==0.4.0",
     "plyfile==1.0.3",
     "open3d==0.18.0",
-    "scikit-learn==1.5.2", # is needed for hloc
+    "scikit-learn==1.5.2",                                   # is needed for hloc
     "pyceres @ git+https://github.com/cvg/pyceres.git@v1.0",
+    "pyyaml>=6.0",
 ]
 
-urls = {Repository = "https://github.com/microsoft/lamar-benchmark"}
+urls = { Repository = "https://github.com/microsoft/lamar-benchmark" }
 
 [project.optional-dependencies]
 scantools = [
@@ -46,19 +47,14 @@ scantools = [
     "bagpy==0.5",
     "rospkg==1.6.0",
     "pyqaternion==0.9.9",
-    "jupyter_compare_view==0.2.4", 
+    "jupyter_compare_view==0.2.4",
     "ipykernel==6.29.5",
     "redact-client @ git+https://github.com/brighter-ai/redact-client.git",
     "torch==2.7.1",
-    "torchvision==0.22.1"
+    "torchvision==0.22.1",
 ]
 
-dev = [
-    "pytest",
-    "pytest-cov",
-    "pylint==2.5",
-    "autopep8",
-]
+dev = ["pytest", "pytest-cov", "pylint==2.5", "autopep8"]
 
 [tool.setuptools]
 packages = ["lamar", "scantools"]

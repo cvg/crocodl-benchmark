@@ -15,13 +15,13 @@ if [ -z "$CAPTURE_DIR" ]; then
   exit 1
 fi
 
-BENCHMARKING_DIR="/benchmarking_ps"
+BENCHMARKING_DIR="/long/benchmarking_results"
 DESCRIPTION_FILE="${CAPTURE_DIR}/codabench/desc.txt"
 OUTPUT_DIR="${CAPTURE_DIR}/codabench"
 LOCAL_FEATURE_METHOD="superpoint"
 MATCHING_METHOD="lightglue"
-GLOBAL_FEATURE_METHOD="netvlad-10"
-SCENES=("hydro" "succu")
+GLOBAL_FEATURE_METHOD="megaloc"
+SCENES=("ARCHE_D2")
 DEVICES_MAP=("ios" "hl" "spot")
 DEVICES_QUERY=("ios" "hl" "spot")
 
@@ -38,12 +38,13 @@ echo "  Devices map: ${DEVICES_MAP[@]}"
 echo "  Devices query: ${DEVICES_QUERY[@]}"
 
 
-read -p "Do you want to continue? (y/n): " answer
+# read -p "Do you want to continue? (y/n): " answer
 
-if [[ ! "$answer" =~ ^[Yy]$ ]]; then
-    echo "Execution aborted."
-    exit 1
-fi
+# if [[ ! "$answer" =~ ^[Yy]$ ]]; then
+#     echo "Execution aborted."
+#     exit 1
+# fi
+
 echo "Running combine_results_crocodl inside Docker ..."
 echo "docker run --rm"
 echo "-v "$CAPTURE_DIR":/data/capture_dir"
@@ -84,7 +85,7 @@ echo "  --output_dir \"$OUTPUT_DIR\""
 docker run --rm \
   -v "$CAPTURE_DIR":/data/capture_dir \
   -v "$DESCRIPTION_FILE":/data/capture_dir/codabench/desc.txt \
-  croco:lamar \
+  croco:long \
   "${CMD[@]}"
 
 echo "Done, combine_results_crocodl completed."

@@ -119,3 +119,11 @@ test_reports
 # vscode
 .vscode/settings.json
 .vscode/launch.json
+
+capture**/
+subset**/
+capture_tree.txt
+output.txt
+evaluation_results/
+test*.*
+notebooks/estimate_pose/

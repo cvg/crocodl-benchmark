@@ -11,7 +11,7 @@ from .misc import KeyType
 
 class Trajectories(Dict[int, Dict[str, Pose]], dict):
     def __setitem__(self,
-                    key: Union[int, KeyType],
+                    key: Union[int, str, KeyType],
                     value: Union[Dict[str, Pose], Pose]):
         # enforce type checking
         if isinstance(key, tuple):
@@ -19,7 +19,7 @@ class Trajectories(Dict[int, Dict[str, Pose]], dict):
             if not isinstance(value, Pose):
                 raise TypeError('invalid Pose type as value')
             self.setdefault(timestamp, {})[device_id] = value
-        elif isinstance(key, int):
+        elif isinstance(key, Union[int, str]):
             timestamp = key
             if not isinstance(value, dict):
                 raise TypeError('invalid value for trajectory timestamp')
@@ -31,11 +31,11 @@ class Trajectories(Dict[int, Dict[str, Pose]], dict):
         else:
             raise TypeError('key must be either int or Tuple[int, str]')
         
-    def __getitem__(self, key: Union[int, KeyType]) -> Union[Dict[str, Pose], Pose]:
+    def __getitem__(self, key: Union[int, str, KeyType]) -> Union[Dict[str, Pose], Pose]:
         if isinstance(key, tuple):  # pylint: disable=no-else-return
             timestamp, device_id = key
             return super().__getitem__(timestamp)[device_id]
-        elif isinstance(key, int):
+        elif isinstance(key, Union[int, str]):
             return super().__getitem__(key)
         else:
             raise TypeError('key must be either int or Tuple[int, str]')
@@ -79,7 +79,10 @@ class Trajectories(Dict[int, Dict[str, Pose]], dict):
         table = read_csv(path)
         trajectories = cls()
         for timestamp, device_id, *qt in table:
-            timestamp = int(timestamp)
+            try:
+                timestamp = int(timestamp)
+            except:
+                timestamp = str(timestamp)
             trajectories[timestamp, device_id] = Pose.from_list(qt)
         return trajectories
 

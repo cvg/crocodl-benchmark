@@ -5,7 +5,7 @@ import numpy as np
 from hloc import extract_features
 
 from ..utils.capture import list_images_for_session
-from ..utils.misc import same_configs, write_config
+from ..utils.misc import same_configs, write_config, same_keyframes, write_keyframes
 
 logger = logging.getLogger(__name__)
 
@@ -16,17 +16,47 @@ class FeatureExtractionPaths:
         self.workdir = root / 'extraction' / session_id / config['name']
         self.features = self.workdir / 'features.h5'
         self.config = self.workdir / 'configuration.json'
+        self.keyframes = self.workdir / 'keyframes.json'
 
 
 class FeatureExtraction:
     methods = {
+        'rdd': {
+            'name': 'rdd',
+            'hloc': {
+                'model': {
+                    'name': 'rdd',
+                    'max_keypoints': 2048,
+                },
+                'preprocessing': {
+                    'grayscale': False,
+                    'resize_max': 1024,
+                },  
+            },
+        },
+        'aliked': {
+            'name': 'aliked',
+            'hloc': {
+                'model': {
+                    "name": "aliked",
+                    "model_name": "aliked-n32",
+                    "max_num_keypoints": 4096,
+                    "detection_threshold": 0.01,
+                    "nms_radius": 2,
+                },
+                'preprocessing': {
+                    'grayscale': True,
+                    'resize_max': 1024,
+                },
+            },
+        },
         'superpoint': {
             'name': 'superpoint',
             'hloc': {
                 'model': {
                     'name': 'superpoint',
                     'nms_radius': 3,
-                    'max_keypoints': 2048,
+                    'max_keypoints': 4096,
                 },
                 'preprocessing': {
                     'grayscale': True,
@@ -113,7 +143,7 @@ class FeatureExtraction:
         self.session_id = session_id
         self.paths = FeatureExtractionPaths(outputs, config, session_id)
         self.paths.workdir.mkdir(parents=True, exist_ok=True)
-        if not same_configs(config, self.paths.config):
+        if not same_configs(config, self.paths.config) or not same_keyframes(query_keys, self.paths.keyframes):
             overwrite = True
 
         logger.info('Extraction local features %s for session %s.', config['name'], session_id)
@@ -129,6 +159,7 @@ class FeatureExtraction:
         )
 
         write_config(config, self.paths.config)
+        write_keyframes(query_keys, self.paths.keyframes)
 
 
 class RetrievalFeatureExtraction(FeatureExtraction):

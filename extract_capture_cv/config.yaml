@@ -1,0 +1,5 @@
+capture_dir: ./capture
+capture_subset_dir: ./capture_cv_3
+
+map_ep: 0.2     # map extraction percentage
+query_ep: 0.01   # map extraction percentage

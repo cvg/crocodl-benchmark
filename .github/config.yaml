@@ -1,0 +1,24 @@
+capture_dir: ./capture
+capture_subset_dir: ./capture_subset
+overwrite: true
+# copy_mode: copy    # set to "copy" to duplicate files instead of symlinking
+
+extraction_percentage: 0.3
+# selection_mode: leading
+
+# locations:
+#   - location: HYDRO
+#     devices: 
+#       - device: ios
+#         extraction_percentage: 30     # keep x% of subsessions (ceil to the next integer)
+#         selection_mode: leading       # alter: center, trailing
+#     devices: 
+#       - device: hl
+#         extraction_percentage: 30     # keep x% of subsessions (ceil to the next integer)
+#         selection_mode: leading       # alter: center, trailing
+#     devices: 
+#       - device: source_capture
+#         extraction_percentage: 30     # keep x% of subsessions (ceil to the next integer)
+#         selection_mode: leading       # alter: center, trailing
+         
+

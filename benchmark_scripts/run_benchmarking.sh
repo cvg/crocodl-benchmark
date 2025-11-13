@@ -24,8 +24,8 @@ if [ -z "$CAPTURE_DIR" ]; then
   exit 1
 fi
 
-LOCATIONS=("HYDRO" "SUCCULENT")
-OUTPUT_DIR="benchmarking_salad"
+LOCATIONS=("ARCHE_D2")
+OUTPUT_DIR="long/benchmarking_results"
 QUERIES_FILE="keyframes_pruned_subsampled.txt"
 LOCAL_FEATURE_METHOD="superpoint"
 MATCHING_METHOD="lightglue"
@@ -44,12 +44,12 @@ echo "  Global feature method: ${GLOBAL_FEATURE_METHOD}"
 echo "  Reference devices: ${DEVICES_REF[@]}"
 echo "  Query devices: ${DEVICES_QUERY[@]}"
 
-read -p "Do you want to continue? (y/n): " answer
+# read -p "Do you want to continue? (y/n): " answer
 
-if [[ ! "$answer" =~ ^[Yy]$ ]]; then
-    echo "Execution aborted."
-    exit 1
-fi
+# if [[ ! "$answer" =~ ^[Yy]$ ]]; then
+#     echo "Execution aborted."
+#     exit 1
+# fi
 
 for LOCATION in "${LOCATIONS[@]}"; do
 
@@ -87,4 +87,6 @@ for LOCATION in "${LOCATIONS[@]}"; do
   done
 
   echo -e "Benchmarking completed for scene: $LOCATION and queries file: $QUERIES_FILE" 
+  echo ""
+  echo ""
 done
