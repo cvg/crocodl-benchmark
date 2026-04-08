@@ -18,5 +18,6 @@ apt-get install -y --no-install-recommends --no-install-suggests \
 
 git clone -b 2.1.0 https://github.com/ceres-solver/ceres-solver.git ceres-solver-v2.1.0 --depth=1
 cd ceres-solver-v2.1.0
-cmake -S . -B build
+#cmake -S . -B build
+cmake -S . -B build -DCXSPARSE=OFF
 cmake --build build --target install -- -j$(nproc)

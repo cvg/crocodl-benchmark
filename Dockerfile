@@ -89,7 +89,6 @@ RUN python3 -m pip install --no-deps \
         pyquaternion==0.9.9 
 
 RUN pip install git+https://github.com/brighter-ai/redact-client.git
-RUN python3 -m pip install torch==2.7.1 torchvision==0.22.1 --index-url https://download.pytorch.org/whl/cpu
 RUN python3 -m pip install bagpy==0.5
 
 RUN cd lamar && python3 -m pip install -e .[scantools] --no-deps
@@ -123,7 +122,7 @@ RUN cd pyceres && \
 #
 # pyceres stage.
 #
-FROM scantools as pyceres
+FROM scantools AS pyceres
 
 # Install minimal runtime dependencies.
 RUN apt-get update && \
@@ -148,7 +147,7 @@ RUN rm -rfv /tmp/*
 #
 # lamar stage.
 #
-FROM pyceres as lamar
+FROM pyceres AS lamar
 
 # Install hloc.
 COPY scripts/install_hloc.sh /tmp/
@@ -158,10 +157,13 @@ RUN bash /tmp/install_hloc.sh
 # installed in previous Docker stages. Attempting to compile it in this stage
 # will lead to failure due to missing necessary development dependencies.
 # Therefore, we replicate the dependencies here, excluding pyceres.
+RUN python3 -m pip install --no-cache-dir \
+        --index-url https://download.pytorch.org/whl/cu121 \
+        torch==2.4.1 torchvision==0.19.1
+
 RUN python3 -m pip install --no-deps \
         h5py==3.10.0 \
         numpy==1.26.3 \
-        torch>=1.1 \
         tqdm>=4.36.0 \
         plyfile==1.0.3 \
         open3d==0.18.0 \
