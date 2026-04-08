@@ -15,7 +15,7 @@ if [ -z "$CAPTURE_DIR" ]; then
   exit 1
 fi
 
-BENCHMARKING_DIR="/benchmarking_ps"
+BENCHMARKING_DIR="/benchmarking"
 DESCRIPTION_FILE="${CAPTURE_DIR}/codabench/desc.txt"
 OUTPUT_DIR="${CAPTURE_DIR}/codabench"
 LOCAL_FEATURE_METHOD="superpoint"

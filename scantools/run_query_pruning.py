@@ -311,6 +311,6 @@ if __name__ == "__main__":
     parser.add_argument("--just_vis", action="store_true", help="Do not overwrite anything, just display visuals.", default=False)
 
     args = parser.parse_args().__dict__
-    args['capture'] = Capture.load(args.pop('capture_path'))
+    args['capture'] = Capture.load(args.pop('capture_path'), ['ios_map', 'hl_map', 'spot_map', 'ios_query', 'hl_query', 'spot_query'])
     
     run(**args)

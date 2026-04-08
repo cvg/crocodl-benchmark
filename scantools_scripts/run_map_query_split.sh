@@ -31,7 +31,8 @@ fi
 echo "Running run_map_query_split_manual on $LOCATION ..."
 
 python -m scantools.run_map_query_split_manual \
-      --capture_path "$CAPTURE" \
+      --capture_path "$CAPTURE_DIR" \
+      --location "$LOCATION" \
       --iosm --iosq --hlq --hlm --spotq --spotm \
       --transform \
       #--just_vis

@@ -39,7 +39,7 @@ docker run --rm \
   -v "$CAPTURE_DIR":/data/capture_dir \
   croco:scantools \
   python3 -m scantools.run_visualize_query_renders \
-    --capture_path "/data/capture_dir/$LOCATION" \
+    --capture_path "/data/capture_dir/" \
     --location "$LOCATION" \
     --skip "10" \
     --num_workers 2 \

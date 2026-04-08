@@ -25,7 +25,6 @@ if [[ ! "$answer" =~ ^[Yy]$ ]]; then
     exit 1
 fi
 
-
 echo "Running read_benchmarking_output on $OUTPUT_FILE inside a Docker ..."
 
 docker run --rm \

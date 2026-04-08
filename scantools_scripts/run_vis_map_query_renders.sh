@@ -36,11 +36,12 @@ fi
 echo "Running run_visualize_map_query_renders on $LOCATION ..."
 
 python3 -m scantools.run_visualize_map_query_renders \
-  --capture_path "$CAPTURE" \
+  --capture_path "$CAPTURE_DIR" \
   --location "$LOCATION" \
-  --skip "1" \
-  --num_workers 2 \
+  --skip "10" \
+  --num_workers 4 \
   --save_video \
-  --pruned_keyframes
+  --pruned_keyframes \
+  --simplified_mesh
 
 echo "Done, run_visualize_map_query_renders process completed for $LOCATION."

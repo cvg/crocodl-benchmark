@@ -237,11 +237,9 @@ def process_map_or_query(
 
         combined_session_path = capture.sessions_path() / output_id
         
-        """
         if os.path.exists(combined_session_path) and os.path.isdir(combined_session_path):
             shutil.rmtree(combined_session_path)
             logger.info(f"Combined session {combined_session_path} already exists, Deleting.")
-        
         
         run_combine_sequences.run(
                 capture, 
@@ -250,7 +248,6 @@ def process_map_or_query(
                 overwrite_poses=overwrite_poses, 
                 reference_id=ref_id,
                 keyframing=keyframing_conf)
-        """
 
         session = capture.sessions[output_id]
         device = session.device
@@ -275,8 +272,8 @@ def process_map_or_query(
         save_keyframes(session=query_session, filename=filename_keys)
         logger.info(f'Saved keyframes to: {filename_keys}')
             
-    #if transform and map_or_query == "map":
-    #    rotate_trajectories(capture, output_id, just_vis)
+    if transform and map_or_query == "map":
+        rotate_trajectories(capture, output_id, just_vis)
 
     logger.info(f"Done merging {map_or_query} for {device}.\n")
 
@@ -323,7 +320,8 @@ def run(capture: Capture,
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Merges sesions into query and map of at least one of ios, hl, or spot. Or any combination of them.")
-    parser.add_argument('--capture_path', type=Path, required=True, help="Where the capture is located with the merged txt files")
+    parser.add_argument("--capture_path", type=Path, required=True, help="Where the capture is located with the merged txt files")
+    parser.add_argument("--location", type=Path, required=True, help="Location name")
     parser.add_argument("--iosq", action="store_true", help="Enable iOS query map merge")
     parser.add_argument("--hlq", action="store_true", help="Enable HL query map merge")
     parser.add_argument("--spotq", action="store_true", help="Enable Spot query map merge")
@@ -340,6 +338,6 @@ if __name__ == "__main__":
         parser.error("At least one of --iosq, --hlq, --spotq, --iosm, --hlm, --spotm must be specified.")
 
     args = parser.parse_args().__dict__
-    args['capture'] = Capture.load(args.pop('capture_path'), ['ios_map', 'hl_map', 'spot_map', 'ios_query', 'hl_query', 'spot_query'])
+    args['capture'] = Capture.load(args.pop('capture_path') / args.pop('location'))
     run(**args)
     

@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Flags and arguments:
-# --scene : name of the scene, all capital leters
 # --ref_id : name of the map session
 # --query_id : name of the query session
 # --retrieval : retrieval method
@@ -24,14 +23,14 @@ if [ -z "$CAPTURE_DIR" ]; then
   exit 1
 fi
 
-LOCATIONS=("HYDRO")
-OUTPUT_DIR="benchmarking_ps"
+LOCATIONS=("ARCHE_D2")
+OUTPUT_DIR="benchmarking"
 QUERIES_FILE="keyframes_pruned_subsampled.txt"
 LOCAL_FEATURE_METHOD="superpoint"
 MATCHING_METHOD="lightglue"
 GLOBAL_FEATURE_METHOD="netvlad"
-DEVICES_REF=("ios" "hl" "spot")
-DEVICES_QUERY=("ios" "hl" "spot")
+DEVICES_REF=("ios")
+DEVICES_QUERY=("ios")
 
 echo "You are running with parameters: "
 echo "  Capture: ${CAPTURE_DIR}"
@@ -51,32 +50,48 @@ if [[ ! "$answer" =~ ^[Yy]$ ]]; then
     exit 1
 fi
 
+if docker info | grep -q nvidia; then
+    GPU_FLAG="--gpus all"
+else
+    GPU_FLAG=""
+fi
+
 for LOCATION in "${LOCATIONS[@]}"; do
 
   CAPTURE="${CAPTURE_DIR}/${LOCATION}"
   OUTPUT_DIR_LOCATION="${CAPTURE}/${OUTPUT_DIR}"
+  mkdir -p $OUTPUT_DIR_LOCATION
 
   # Do not remove or change this line if you intend to use automatic recall reading tool.
-  echo "Starting benchmarking for scene: $LOCATION and queries file: $QUERIES_FILE"
+  echo "Starting benchmarking for scene: $LOCATION and queries file: $QUERIES_FILE inside a Docker ..."
 
   for ref in "${DEVICES_REF[@]}"; do
     for query in "${DEVICES_QUERY[@]}"; do
-      echo "Running with ref_id=${ref}_map and query_id=${query}_query ..."
+      echo "Running with ref_id=${ref} and query_id=${query} ..."
       
       is_rig_flag=""
+
       if [[ "$query" == "hl" || "$query" == "spot" ]]; then
         is_rig_flag="--is_rig"
         echo "Run is using flag --is_rig due to ${query}_query"
       fi
 
-      docker run --rm \
+      if [[ "$ref" == "hl" || "$ref" == "spot" || "$ref" == "ios" ]]; then
+        ref="${ref}_map"
+      fi
+
+      if [[ "$query" == "hl" || "$query" == "spot" || "$query" == "ios" ]]; then
+        query="${query}_query"
+      fi
+
+      docker run --rm $GPU_FLAG \
+        --ipc=host \
         -v "$OUTPUT_DIR_LOCATION":/data/output_dir \
         -v "$CAPTURE":/data/capture_dir \
         croco:lamar \
         python -m lamar.run \
-        --scene "$SCENE" \
-        --ref_id "${ref}_map" \
-        --query_id "${query}_query" \
+        --ref_id "${ref}" \
+        --query_id "${query}" \
         --retrieval "$GLOBAL_FEATURE_METHOD" \
         --feature "$LOCAL_FEATURE_METHOD" \
         --matcher "$MATCHING_METHOD" \
@@ -85,7 +100,7 @@ for LOCATION in "${LOCATIONS[@]}"; do
         --query_filename "$QUERIES_FILE" \
         $is_rig_flag
 
-      echo "Benchmarking completed for ref_id=${ref}_map and query_id=${query}_query"
+      echo "Benchmarking completed for ref_id=${ref} and query_id=${query}"
       echo ""
     done
   done

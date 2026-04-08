@@ -29,21 +29,27 @@ if ! $CHALLENGE && ! $FULL_RELEASE && ! $RAW; then
 fi
 
 # --- Define scenes ---
-CHALLENGE_SCENES=("HYDRO", "SUCCULENT")
-FULL_RELEASE_SCENES=("ARCHE_D2")
+CHALLENGE_SCENES=("HYDRO")
+FULL_RELEASE_SCENES=("ARCHE_GRANDE" "ARCHE_D2")
 RAW_SCENES=("ARCHE_D2")
-MAX_WORKERS=16
+MAX_WORKERS=4
 
 echo "You are running with parameters: "
 echo "  Capture: ${CAPTURE_DIR}"
 echo "  Max workers: ${MAX_WORKERS}"
-echo "  Challenge data: ${CHALLENGE}"
-echo "    Challenge scenes: ${CHALLENGE_SCENES[@]}"
-echo "  Full release data: ${FULL_RELEASE}"
-echo "    Full release scenes: ${FULL_RELEASE_SCENES[@]}"
-echo "  Raw data: ${RAW}"
-echo "    Raw scenes: ${RAW_SCENES[@]}"
-echo "  Codabench folder: ${CAPTURE_DIR}/codabench"
+
+if $FULL_RELEASE; then
+  echo "  Full release scenes: ${FULL_RELEASE_SCENES[@]}"
+fi
+
+if $RAW; then
+  echo "  Raw scenes: ${RAW_SCENES[@]}"
+fi
+
+if $CHALLENGE; then
+  echo "  Challenge scenes: ${CHALLENGE_SCENES[@]}"
+  echo "  Codabench folder: ${CAPTURE_DIR}/codabench"
+fi
 
 read -p "Do you want to continue? (y/n): " answer
 if [[ ! "$answer" =~ ^[Yy]$ ]]; then
@@ -73,7 +79,7 @@ PnP error multiplier 3 for single-image, 1 for rigs.
 EOF
 
   for scene in "${CHALLENGE_SCENES[@]}"; do
-    scene_challenge="${scene}-challenge-test"
+    scene_challenge="${scene}-challenge"
     target_dir="${CAPTURE_DIR}/${scene}"
 
     if [[ -d "$target_dir" ]]; then
@@ -83,11 +89,12 @@ EOF
       cd "$target_dir" || { echo "Failed to cd to $target_dir"; exit 1; }
       hf download "CroCoDL/${scene_challenge}" --repo-type dataset --local-dir "${target_dir}/sessions" --max-workers "${MAX_WORKERS}"
       rm -rf "${target_dir}/sessions/.gitattributes"
+      rm -rf "${target_dir}/sessions/.cache"
 
       # --- Unzip all .zip files and delete them ---
       echo "Unzipping .zip files in $target_dir ..."
       find "$target_dir" -type f -name "*.zip" | while read zipfile; do
-        unzip -o "$zipfile" -d "$(dirname "$zipfile")"
+        unzip -o -q "$zipfile" -d "$(dirname "$zipfile")"
         if [[ $? -eq 0 ]]; then
           rm "$zipfile"
           echo "Unzipped and removed $zipfile"
@@ -121,6 +128,7 @@ if $FULL_RELEASE; then
       fi
 
       rm -rf "${target_dir}/.gitattributes"
+      rm -rf "${target_dir}/.cache"
 
       echo "Downloaded release data for $scene."
 
@@ -132,7 +140,7 @@ if $FULL_RELEASE; then
       # --- Unzip all .zip files and delete them ---
       echo "Unzipping .zip files in $target_dir ..."
       find "$target_dir" -type f -name "*.zip" | while read zipfile; do
-        unzip -o "$zipfile" -d "$(dirname "$zipfile")"
+        unzip -o -q "$zipfile" -d "$(dirname "$zipfile")"
         if [[ $? -eq 0 ]]; then
           rm "$zipfile"
           echo "Unzipped and removed $zipfile"
@@ -174,7 +182,7 @@ if $RAW; then
       # --- Unzip all .zip files and delete them ---
       echo "Unzipping .zip files in $target_dir ..."
       find "$target_dir" -type f -name "*.zip" | while read zipfile; do
-        unzip -o "$zipfile" -d "$(dirname "$zipfile")"
+        unzip -o -q "$zipfile" -d "$(dirname "$zipfile")"
         if [[ $? -eq 0 ]]; then
           rm "$zipfile"
           echo "Unzipped and removed $zipfile"

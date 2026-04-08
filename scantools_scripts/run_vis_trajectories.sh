@@ -29,7 +29,8 @@ fi
 echo "Running run_visualize_trajectories on $LOCATION ..."
 
 python3 -m scantools.run_visualize_trajectories \
-  --capture_path "$CAPTURE" \
+  --capture_path "$CAPTURE_DIR" \
+  --location "$LOCATION" \
   --spot --ios --hl
 
 echo "Done, run_visualize_trajectories process completed for $LOCATION."

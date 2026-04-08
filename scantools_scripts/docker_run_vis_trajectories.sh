@@ -29,10 +29,11 @@ fi
 echo "Running run_visualize_trajectories on location $LOCATION inside a Docker ..."
 
 docker run --rm \
-  -v "$CAPTURE":/data/capture_dir \
+  -v "$CAPTURE_DIR":/data/capture_dir \
   croco:scantools \
   python3 -m scantools.run_visualize_trajectories \
     --capture_path /data/capture_dir  \
+    --location "$LOCATION" \
     --ios --spot --hl
 
 echo "Done, run_visualize_trajectories process completed on $LOCATION."
