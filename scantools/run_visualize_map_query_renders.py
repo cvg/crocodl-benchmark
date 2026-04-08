@@ -23,19 +23,16 @@ def get_ref(capture_path: Path, location: str, simplified_mesh: bool):
     Use simplified mesh to avoid OEM issues.
     """
 
-    clean_path = str(capture_path).rstrip('/')
-    base_path = Path(os.path.dirname(clean_path))
-    location = os.path.basename(clean_path)
     # from pipeline_sequence where ref_ids are hardcoded
-    ref_id, _, _, _ = eval('get_data_' + location)(base_path)
+    ref_id, _, _, _ = eval('get_data_' + location)(capture_path)
 
-    session_ref = Session.load(capture_path / 'sessions' / ref_id)
+    session_ref = Session.load(capture_path / location / 'sessions' / ref_id)
     T_mesh2global = session_ref.proc.alignment_global.get_abs_pose('pose_graph_optimized')
     
     if simplified_mesh:
-        mesh = read_mesh(capture_path / 'sessions' / ref_id / 'proc' / session_ref.proc.meshes['mesh_simplified'])
+        mesh = read_mesh(capture_path / location / 'sessions' / ref_id / 'proc' / session_ref.proc.meshes['mesh_simplified'])
     else:
-        mesh = read_mesh(capture_path / 'sessions' / ref_id / 'proc' / session_ref.proc.meshes['mesh'])
+        mesh = read_mesh(capture_path / location / 'sessions' / ref_id / 'proc' / session_ref.proc.meshes['mesh'])
 
     try:
         renderer = Renderer(mesh)
@@ -45,7 +42,7 @@ def get_ref(capture_path: Path, location: str, simplified_mesh: bool):
 
     logger.info(f"Mesh loaded from {capture_path / 'sessions' / ref_id / 'proc' / session_ref.proc.meshes['mesh_simplified' if simplified_mesh else 'mesh']}.")
 
-    return renderer, T_mesh2global
+    return renderer, T_mesh2global, ref_id
 
 def read_raw_image(cam_id, data_path, images):
     """
@@ -78,28 +75,6 @@ def render_image(cam_id, T, images, cameras, renderer, rig=None):
     render, _ = renderer.render_from_capture(T, camera)
     render = (np.clip(render, 0, 1) * 255).astype(np.uint8)
     return render
-
-def save_render_video(images_path, video_path, skip):
-    """
-    Saves rendered images into a video.
-    """
-    os.makedirs(os.path.dirname(video_path), exist_ok=True)
-
-    images = [img for img in os.listdir(images_path) if img.endswith(".png")]
-    images.sort() 
-
-    frame = cv2.imread(os.path.join(images_path, images[0]))
-    height, width, layers = frame.shape
-
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    video = cv2.VideoWriter(str(video_path), fourcc, int(30 / skip), (width, height))
-
-    for image in images:
-        frame = cv2.imread(os.path.join(images_path, image))
-        video.write(frame)
-
-    video.release()
-    logger.info(f"Video saved to {video_path}")
 
 def create_mask(width, height):
     """
@@ -171,6 +146,103 @@ def filter_keyframes(capture: Capture, keyframes_og: list, query: str):
 
     return filtered_keyframes
 
+def split_keys(session: Session):
+    """
+    Splits keys into different cameras for trajectory video saving.
+    """
+
+    if "spot" in session.id:
+        out_keys = {'spot-camera-frontleft-image': [], 'spot-camera-frontright-image': [], 'spot-camera-left-image': [], 'spot-camera-right-image': []}
+    if "hl" in session.id:
+        out_keys = {'hetll': [], 'hetrr': [], 'hetlf': [], 'hetrf': []}
+    if "ios" in session.id:
+        out_keys = {'main-camera': []}
+
+    for ts, elements in session.images.items():
+        for cam_id, img_path in elements.items():
+            if "spot" in session.id:
+                if 'spot-camera-frontleft-image' in cam_id: out_keys['spot-camera-frontleft-image'].append((ts, cam_id, img_path))
+                if 'spot-camera-frontright-image' in cam_id: out_keys['spot-camera-frontright-image'].append((ts, cam_id, img_path))
+                if 'spot-camera-left-image' in cam_id: out_keys['spot-camera-left-image'].append((ts, cam_id, img_path))
+                if 'spot-camera-right-image' in cam_id: out_keys['spot-camera-right-image'].append((ts, cam_id, img_path))
+            if "hl" in session.id:
+                if 'hetll' in cam_id: out_keys['hetll'].append((ts, cam_id, img_path))
+                if 'hetrr' in cam_id: out_keys['hetrr'].append((ts, cam_id, img_path))
+                if 'hetlf' in cam_id: out_keys['hetlf'].append((ts, cam_id, img_path))
+                if 'hetrf' in cam_id: out_keys['hetrf'].append((ts, cam_id, img_path))
+            if "ios" in session.id:
+                out_keys['main-camera'].append((ts, cam_id, img_path))
+
+    return out_keys
+
+def save_trajectory_video(capture: Capture,session: Session, video_path: Path):
+    """
+    Saves trajectory images into a video.
+    """
+
+    os.makedirs(video_path, exist_ok=True)
+
+    if "ios" in session.id: fps = 60
+    elif "spot" in session.id: fps = 15
+    elif "hl" in session.id: fps = 30
+    else: fps = 30 
+
+    new_keys = split_keys(session)
+
+    for cam_name, cam_keys in new_keys.items():
+
+        cam_keys = new_keys[cam_name]
+        if not cam_keys: continue
+        cam_keys.sort(key=lambda x: x[0])
+
+        images = [
+            capture.session_path(session.id) / Path(session.data_dirname) / Path(img_path)
+            for ts, cam_id, img_path in cam_keys
+        ]
+
+        out_video = video_path / f"{cam_name}.mp4"
+
+        frame = cv2.imread(str(images[0]))
+        height, width, layers = frame.shape
+
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        video = cv2.VideoWriter(str(out_video), fourcc, fps, (width, height))
+
+        for img_path in tqdm(images, desc="Writing video frames", unit="frame"):
+            frame = cv2.imread(str(img_path))
+            if frame is None:
+                logger.warning(f"Skipping unreadable image: {img_path}")
+                continue
+            video.write(frame)
+
+        video.release()
+        logger.info(f"Trajectory video saved to {out_video}")
+
+
+def save_render_video(images_path, video_path, skip):
+    """
+    Saves rendered images into a video.
+    """
+    
+    os.makedirs(os.path.dirname(video_path), exist_ok=True)
+
+    images = [img for img in os.listdir(images_path) if img.endswith(".png")]
+    images.sort() 
+
+    frame = cv2.imread(os.path.join(images_path, images[0]))
+    height, width, layers = frame.shape
+
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    video = cv2.VideoWriter(str(video_path), fourcc, int(30 / skip), (width, height))
+
+    for image in images:
+        frame = cv2.imread(os.path.join(images_path, image))
+        video.write(frame)
+
+    video.release()
+    logger.info(f"Renders video saved to {video_path}")
+
+
 def run(capture_path: Path, location: str, skip: int, simplified_mesh: bool, save_video: bool, num_workers: int, pruned_keyframes: bool):
     """
     Plots alignment comparison between rendered image and raw images for each image in the map/query sessions for all devices.
@@ -179,11 +251,12 @@ def run(capture_path: Path, location: str, skip: int, simplified_mesh: bool, sav
 
     logger.info(f"Working on rendering with {num_workers} workers.")
 
-    renderer, T_mesh2global = get_ref(capture_path, location, simplified_mesh)
+    renderer, T_mesh2global, ref_id = get_ref(capture_path, location, simplified_mesh)
 
-    query_list = ['spot_map', 'ios_map', 'hl_map', 'spot_query', 'ios_query', 'hl_query']
+    query_list = ['ios_map', 'hl_map', 'spot_map', 'ios_query', 'hl_query', 'spot_query']
 
-    capture = Capture.load(capture_path, query_list)
+    query_list.append(ref_id)
+    capture = Capture.load(capture_path / location, query_list)
 
     logger.info(f"Working on location {location} with sessions {query_list}.")
 
@@ -192,10 +265,9 @@ def run(capture_path: Path, location: str, skip: int, simplified_mesh: bool, sav
         if not os.path.isdir(capture.sessions_path() / query):
             logger.info(f"Query {query} does not exist. Skipping.")
 
-        logger.info(f"Working on rendering keyframes of {query}.")
+        logger.info(f"Working on rendering keyframes for {query}.")
 
-        session_q = capture.sessions[query]
-        session_q = Session.load(capture_path / 'sessions' / query) 
+        session_q = Session.load(capture_path / location / 'sessions' / query) 
 
         if "map" in query:
             trajectory = session_q.trajectories
@@ -219,9 +291,12 @@ def run(capture_path: Path, location: str, skip: int, simplified_mesh: bool, sav
             list(tqdm(executor.map(process_camera_wrapper, arg_list), total=len(arg_list), desc=f"Rendering cameras for {query}"))
 
         if save_video:
-            images_path = capture.viz_path() / Path('renders') / Path(query + '_renders')
-            video_path = capture.viz_path() / Path('render_videos') / Path(query + '.mp4')
-            save_render_video(images_path, video_path, skip)
+            render_images_path = capture.viz_path() / Path('renders') / Path(query + '_renders')
+            render_video_path = capture.viz_path() / Path('render_videos') / Path(query + '.mp4')
+            save_render_video(render_images_path, render_video_path, skip)
+
+            trajectory_video_path = capture.viz_path() / Path('trajectory_videos') / Path(query)
+            save_trajectory_video(capture, session_q, trajectory_video_path)
 
         logger.info(f"Done rendering keyframes of {query}.")
 

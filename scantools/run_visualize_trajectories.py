@@ -66,10 +66,10 @@ def run(
 
         logger.info(f"Visualized trajectories for device {device}.")
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Given prefix plots individual sessions together.")
-    parser.add_argument("--capture_path", type=Path, help="Capture path of the location to visualize trajectories.")
+    parser.add_argument("--capture_path", type=Path, required=True, help="Capture path of the location to visualize trajectories.")
+    parser.add_argument("--location", type=Path, required=True, help="Location name")
     parser.add_argument("--ios", action="store_true", help="Enable ios trajectory visual")
     parser.add_argument("--hl", action="store_true", help="Enable hl trajectory visual")
     parser.add_argument("--spot", action="store_true", help="Enable spot trajectory visual")
@@ -79,6 +79,6 @@ if __name__ == "__main__":
     if args['ios'] is False and args['spot'] is False and args['hl'] is False:
         parser.error("At least one of --ios, --hl, or --spot is required.")
 
-    args['capture'] = Capture.load(args.pop('capture_path'), session_ids=[])
+    args['capture'] = Capture.load(args.pop('capture_path') / args.pop('location'))
 
     run(**args)
