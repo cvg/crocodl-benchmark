@@ -90,20 +90,28 @@ def print_confusion_mat(confusion_mat):
     """
     Using confusion matrix list, prints out recall values or None for non existing ones.
     """
-    queries = ['spot_query', 'ios_query', 'hl_query']
-    refs = ['spot_map', 'ios_map', 'hl_map']
+
+    # Extract unique query_ids and ref_ids
+    queries = sorted({entry['query_id'] for entry in confusion_mat})
+    refs = sorted({entry['ref_id'] for entry in confusion_mat})
+
+    # Move refs starting with a number to the end
+    refs = [r for r in refs if not r[0].isdigit()] + [r for r in refs if r[0].isdigit()]
+
     recall_lookup = {(d['ref_id'], d['query_id']): d['recall'] for d in confusion_mat}
 
-    print(f"{'':<12}", end='')
+    table_width = 15
+
+    print(f"{'':<{table_width}}", end='')
     for ref in refs:
-        print(f"{ref:<12}", end='')
+        print(f"{ref:<{table_width}}", end='')
     print()
 
     for query in queries:
-        print(f"{query:<12}", end='')
+        print(f"{query:<{table_width}}", end='')
         for ref in refs:
             recall = recall_lookup.get((ref, query), 'None')
-            print(f"{recall:<12}", end='')
+            print(f"{recall:<{table_width}}", end='')
         print()
 
 def find_recall_lines(
@@ -185,4 +193,3 @@ if __name__ == "__main__":
     args = parser.parse_args().__dict__
 
     find_recall_lines(**args)
-
