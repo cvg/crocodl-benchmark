@@ -68,11 +68,16 @@ class PairSelection:
             'mesh_id': 'mesh_simplified',
             'num_rays': 60,
         },
+        'overlap-fullmesh': {
+            'name': 'overlap',
+            'mesh_id': 'mesh',
+            'num_rays': 60,
+        },
         'fusion': {
             'name': 'fusion',
             'retrieval': [
                 RetrievalFeatureExtraction.methods['netvlad'],
-                RetrievalFeatureExtraction.methods['ap-gem'],
+                RetrievalFeatureExtraction.methods['megaloc'],
             ],
         }
     }
@@ -159,7 +164,6 @@ def load_pairs(input_path):
     for line in lines:
         pairs.append(line.strip('\n').split(' '))
     return pairs
-
 
 def save_retrieval(retrieval, output_path):
     with open(output_path, 'w') as fid:

@@ -9,7 +9,6 @@ from ..utils.misc import same_configs, write_config
 
 logger = logging.getLogger(__name__)
 
-
 class FeatureExtractionPaths:
     def __init__(self, root, config, session_id):
         self.root = root
@@ -17,9 +16,11 @@ class FeatureExtractionPaths:
         self.features = self.workdir / 'features.h5'
         self.config = self.workdir / 'configuration.json'
 
-
 class FeatureExtraction:
     methods = {
+        'anypoint': {
+            'name': 'anypoint'
+        },
         'superpoint': {
             'name': 'superpoint',
             'hloc': {
@@ -119,14 +120,17 @@ class FeatureExtraction:
         logger.info('Extraction local features %s for session %s.', config['name'], session_id)
         _, names, image_root = list_images_for_session(capture, session_id, query_keys)
         names = np.unique(names)
-        extract_features.main(
-            config['hloc'],
-            image_root,
-            feature_path=self.paths.features,
-            image_list=names,
-            as_half=True,
-            overwrite=overwrite,
-        )
+        self.image_root = image_root
+        self.names = names
+        if 'hloc' in config:
+            extract_features.main(
+                config['hloc'],
+                image_root,
+                feature_path=self.paths.features,
+                image_list=names,
+                as_half=True,
+                overwrite=overwrite,
+            )
 
         write_config(config, self.paths.config)
 
@@ -141,6 +145,9 @@ class RetrievalFeatureExtraction(FeatureExtraction):
             },
         },
         'ap-gem': {
+            # APGem retrival weights are not longer available for download.
+            # We will leave this configuration in case you have weights locally.
+            # If you want to use APGem save them to: torch.hub.get_dir() / 'dirtorch' / 'Resnet-101-AP-GeM.pt'.
             'name': 'ap-gem',
             'hloc': {
                 'model': {'name': 'dir'},
@@ -158,6 +165,20 @@ class RetrievalFeatureExtraction(FeatureExtraction):
             'name': 'salad',
             'hloc': {
                 'model': {'name': 'salad'},
+                'preprocessing': {'resize_max': 640},
+            }
+        },
+        'openibl': {
+            'name': 'openibl',
+            'hloc': {
+                'model': {'name': 'openibl'},
+                'preprocessing': {'resize_max': 1024},
+            }
+        },
+        'cosplace': {
+            'name': 'cosplace',
+            'hloc': {
+                'model': {'name': 'cosplace'},
                 'preprocessing': {'resize_max': 640},
             }
         },

@@ -11,7 +11,6 @@ from scantools.capture import Trajectories, Rigs
 
 from .feature_extraction import FeatureExtraction
 from .feature_matching import FeatureMatching
-from .dense_matching import DenseMatching
 from .mapping import Mapping
 from ..utils.capture import list_images_for_session, list_trajectory_keys_for_session
 from ..utils.misc import same_configs, write_config
@@ -23,7 +22,6 @@ from ..utils.retrieval import get_retrieval
 logger = logging.getLogger(__name__)
 KeyType = Tuple[int, str]
 
-
 class PoseEstimationPaths:
     def __init__(self, root, config, query_id, ref_id, override_workdir_root=None):
         self.root = root
@@ -31,7 +29,7 @@ class PoseEstimationPaths:
             root = override_workdir_root
         self.workdir = (
             root / 'pose_estimation' / query_id / ref_id
-            / config['features']['name'] / config['matches']['name']
+            / config['features']['name'] / config['matches']['matching']['name']
             / config['pairs']['name'] / config['mapping']['name'] / config['name']
         )
         self.poses = self.workdir / 'poses.txt'
@@ -50,7 +48,7 @@ class PoseEstimation:
     method2class = {}
     method = None
     evaluation = {
-        'Rt_thresholds': [(5, 0.5), (5, 1.0), (1, 0.1)],
+        'Rt_thresholds': [(5, 0.5), (5, 1.0), (1, 0.1), (10, 1.0)],
     }
 
     def __init_subclass__(cls):
@@ -229,84 +227,4 @@ class RigSinglePoseEstimation(SingleImagePoseEstimation):
     method = {
         'name': 'rig_single',
         'pnp_error_multiplier': 1.0
-    }
-
-
-class DensePoseEstimation(PoseEstimation):
-    method = None
-
-    def __init__(self, config, outputs, capture, query_id,
-                 matching: DenseMatching, mapping: Mapping,
-                 query_keys: list = None, parallel: bool = True,
-                 return_covariance: bool = False):
-
-        assert query_id == matching.query_id
-        ref_id = mapping.session_id
-        assert ref_id == matching.ref_id
-
-        self.config = config = {
-            **deepcopy(config),
-            'features': {'name': ''},  # dummy for paths
-            'matches': matching.config,
-            'pairs': matching.pair_selection.config.to_dict(),
-            'mapping': mapping.config,
-        }
-        self.query_id = query_id
-        self.ref_id = ref_id
-        self.matching = matching
-        self.mapping = mapping
-        self.paths = PoseEstimationPaths(outputs, config, query_id, ref_id)
-        self.query_keys = query_keys
-        self.query_rigs = capture.sessions[query_id].rigs
-        self.parallel = parallel
-        self.return_covariance = return_covariance
-
-        self.paths.workdir.mkdir(parents=True, exist_ok=True)
-        overwrite = not same_configs(config, self.paths.config)
-        if overwrite:
-            self.poses = self.run(capture)
-            self.poses.save(self.paths.poses)
-            write_config(config, self.paths.config)
-        else:
-            self.poses = Trajectories().load(self.paths.poses)
-
-    def recover_matches_2d3d(self, query: str, ref_key_names: List[Tuple[KeyType, str]]):
-        if len(ref_key_names) == 0:
-            ref_keys = ref_names = []
-        else:
-            ref_keys, ref_names = zip(*ref_key_names)
-        matches = self.matching.get_matches_pairs(zip([query]*len(ref_names), ref_names))
-        ret = {
-            'kp_q': [np.empty((0, 2))],
-            'p3d': [np.empty((0, 3))],
-            'indices': [np.empty((0,), int)],
-            'node_ids_ref': [np.empty((0, 2), object)]
-        }
-        noise = None
-        for idx, ref_key in enumerate(ref_keys):
-            kp_q, kp_r, noise, _ = matches[idx]
-            if len(kp_q) == 0:
-                continue
-            valid, p3ds = self.mapping.lift_points2D(ref_key, kp_r)
-            if len(p3ds) == 0:
-                continue
-            node_ids_ref = [(ref_key, uuid.uuid4().int) for _ in p3ds]  # unique ID
-            ret['kp_q'].append(kp_q[valid])
-            ret['p3d'].append(np.asarray(p3ds))
-            ret['indices'].append(np.array([idx]*len(p3ds)))
-            ret['node_ids_ref'].append(np.array(node_ids_ref, dtype=object))
-        ret = {k: np.concatenate(v, 0) for k, v in ret.items()}
-        return {**ret, 'keypoint_noise': noise}
-
-
-class SingleImageDensePoseEstimation(DensePoseEstimation, SingleImagePoseEstimation):
-    method = {
-        'name': 'dense_single_image',
-        'pnp_error_multiplier': 3.0,
-    }
-
-class RigDensePoseEstimation(DensePoseEstimation, RigPoseEstimation):
-    method = {
-        'name': 'dense_rig',
-        'pnp_error_multiplier': 1.0,
     }

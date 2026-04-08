@@ -2,7 +2,7 @@ import logging
 from typing import Optional
 from copy import deepcopy
 
-from hloc import match_features
+from hloc import match_features, match_dense
 
 from .feature_extraction import FeatureExtraction
 from .pair_selection import PairSelection
@@ -22,8 +22,64 @@ class FeatureMatchingPaths:
 
 class FeatureMatching:
     methods = {
+        'mast3r': {
+            'name': 'mast3r',
+            'type': 'dense',
+            'hloc': {
+                'model': {
+                    'name': 'mast3r',
+                    'model_name': 'naver/MASt3R_ViTLarge_BaseDecoder_512_catmlpdpt_metric',
+                    'image_size': 518,
+                    'subsample': 8,
+                    'border': 3,
+                    'block_size': 2**13,
+                },
+                'preprocessing': {
+                    'grayscale': True,
+                    'resize_max': 1024,
+                    'dfactor': 8,
+                },
+                'max_error': 2,
+                'cell_size': 8,
+            }
+        },
+        'loftr': {
+            'name': 'loftr',
+            'type': 'dense',
+            'hloc': {
+                'model': {
+                    'name': 'loftr',
+                    'weights': 'outdoor'
+                },
+                'preprocessing': {
+                    'grayscale': True,
+                    'resize_max': 1024,
+                    'dfactor': 8
+                },
+                'max_error': 2,
+                'cell_size': 8,
+            }
+        },
+        'loftr_superpoint': {
+            'name': 'loftr_superpoint',
+            'type': 'dense',
+            'hloc': {
+                'model': {
+                    'name': 'loftr',
+                    'weights': 'outdoor'
+                },
+                'preprocessing': {
+                    'grayscale': True,
+                    'resize_max': 1024,
+                    'dfactor': 8
+                },
+                'max_error': 4,
+                'cell_size': 4,
+            }
+        },
         'superglue': {
             'name': 'superglue',
+            'type': 'sparse',
             'hloc': {
                 'model': {
                     'name': 'superglue',
@@ -34,6 +90,7 @@ class FeatureMatching:
         },
         'lightglue': {
             'name': 'lightglue',
+            'type': 'sparse',
             'hloc': {
                 'model': {
                     'name': 'lightglue',
@@ -41,8 +98,19 @@ class FeatureMatching:
                 },
             },
         },
+        'lightglue_sift': {
+            'name': 'lightglue_sift',
+            'type': 'sparse',
+            'hloc': {
+                'model': {
+                    'name': 'lightglue',
+                    'features': 'sift',
+                },
+            },
+        },
         'mnn': {
             'name': 'mnn',
+            'type': 'sparse',
             'hloc': {
                 'model': {
                     'name': 'nearest_neighbor',
@@ -52,6 +120,7 @@ class FeatureMatching:
         },
         'ratio_mnn_0_9': {
             'name': 'ratio_mnn',
+            'type': 'sparse',
             'hloc': {
                 'model': {
                     'name': 'nearest_neighbor',
@@ -62,6 +131,7 @@ class FeatureMatching:
         },
         'ratio_mnn_0_8': {
             'name': 'ratio_mnn',
+            'type': 'sparse',
             'hloc': {
                 'model': {
                     'name': 'nearest_neighbor',
@@ -72,56 +142,66 @@ class FeatureMatching:
         },
         'adalam': {
             'name': 'adalam',
+            'type': 'sparse',
             'hloc': {
                 'model': {
                     'name': 'adalam'
                 },
             }
-        }
+        },
     }
 
     def __init__(self, outputs, capture, query_id, ref_id, config,
                  pair_selection: PairSelection,
-                 extraction: FeatureExtraction,
-                 extraction_ref: Optional[FeatureExtraction] = None,
                  overwrite=False):
-        
-        extraction_ref = extraction_ref or extraction
-        if extraction.config['name'] != extraction_ref.config['name']:
-            raise ValueError('Matching two different features: '
-                             f'{extraction.config} vs {extraction_ref.config}')
-        assert query_id == extraction.session_id
-        assert query_id == pair_selection.query_id
-        assert ref_id == extraction_ref.session_id
-        assert ref_id == pair_selection.ref_id
 
-        self.config = config = {
-            **deepcopy(config),
-            'features': extraction.config,  # detect upstream changes
-            # do not include the pairs so the same file can be reused
-        }
-            
+        self.config = config = deepcopy(config)
         self.query_id = query_id
         self.ref_id = ref_id
-        self.extraction = extraction
-        self.extraction_ref = extraction_ref
         self.pair_selection = pair_selection
-        self.paths = FeatureMatchingPaths(outputs, config, query_id, ref_id)
+        self.extraction = FeatureExtraction(outputs, capture, query_id, config['extraction'])
+        self.extraction_ref = FeatureExtraction(outputs, capture, ref_id, config['extraction'])
+        self.paths = FeatureMatchingPaths(outputs, {**config['matching'], 'features': self.extraction.config}, query_id, ref_id)
         self.paths.workdir.mkdir(parents=True, exist_ok=True)
 
-        logger.info('Matching local features with %s for sessions (%s, %s).',
-                    config['name'], query_id, ref_id)
-        if not same_configs(config, self.paths.config):
-            logger.warning('Existing matches will be overwritten.')
-            overwrite = True
+        if 'sparse' in config['matching']['type']:
+            logger.info('Matching local features with %s for sessions (%s, %s).',
+                        config['matching']['name'], query_id, ref_id)
 
-        match_features.main(
-            config['hloc'],
-            pair_selection.paths.pairs_hloc,
-            extraction.paths.features,
-            matches=self.paths.matches,
-            features_ref=extraction_ref.paths.features,
-            overwrite=overwrite,
-        )
+            if not same_configs(config, self.paths.config):
+                logger.warning('Existing matches will be overwritten.')
+                overwrite = True
 
-        write_config(config, self.paths.config)
+            match_features.main(
+                config['matching']['hloc'],
+                pair_selection.paths.pairs_hloc,
+                self.extraction.paths.features,
+                matches=self.paths.matches,
+                features_ref=self.extraction_ref.paths.features,
+                overwrite=overwrite,
+            )
+
+            write_config(config, self.paths.config)
+
+        elif 'dense' in config['matching']['type']:
+            logger.info('Matching dense features with %s for sessions (%s, %s).',
+                        config['matching']['name'], query_id, ref_id)
+
+            if not same_configs(config, self.paths.config):
+                logger.warning('Existing matches will be overwritten.')
+                overwrite = True
+
+            match_dense.main(
+                config['matching']['hloc'],
+                pair_selection.paths.pairs_hloc,
+                self.extraction.image_root,
+                matches=self.paths.matches,
+                features=self.extraction.paths.features,
+                features_ref=None if query_id == ref_id else self.extraction_ref.paths.features,
+                overwrite=overwrite,
+            )
+
+            write_config(config, self.paths.config)
+
+        else:
+            logger.warning('Matching should be either dense or sparse. You provided configuration %s.', config['matching'])

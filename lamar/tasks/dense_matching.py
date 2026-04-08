@@ -6,6 +6,7 @@ from tqdm import tqdm
 import numpy as np
 import h5py
 import torch
+
 from kornia.feature import LoFTR
 
 from hloc.utils.parsers import parse_retrieval, names_to_pair
@@ -16,7 +17,6 @@ from .pair_selection import PairSelection
 from ..utils.misc import same_configs, write_config
 
 logger = logging.getLogger(__name__)
-
 
 class DenseMatchingPaths:
     def __init__(self, root, config, query_id, ref_id):

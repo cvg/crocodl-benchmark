@@ -14,7 +14,6 @@ from lamar.utils.capture import (
 
 from lamar import logger
 
-
 def run(outputs: Path,
         capture: Capture,
         ref_id: str,
@@ -33,11 +32,13 @@ def run(outputs: Path,
         do_rig: bool = True,
         query_filename: str = 'keyframes_original.txt'):
 
-    if matcher_query is None:
-        matcher_query = matcher
+    if matcher_query is None: matcher_query = matcher
 
     session_q = capture.sessions[query_id]
     is_sequential = sequence_length_seconds is not None
+
+    logger.info(f'Data is sequential: {is_sequential}')
+
     if filter_pairs_mapping is None:
         filter_pairs_mapping = {
             'filter_frustum': {'do': True},
@@ -66,6 +67,7 @@ def run(outputs: Path,
         },
         'chunks': ChunkAlignment.methods['rig' if is_rig and do_rig else 'single_image'],
     }
+
     if use_radios:
         configs['pairs_loc']['filter_radio'] = {
             'do': True, 'window_us': 2_000_000, 'frac_pairs_filter': 0.025}
@@ -79,6 +81,7 @@ def run(outputs: Path,
 
     query_list_path = capture.session_path(query_id) / 'proc' / query_filename
     query_list = image_keys = read_query_list(query_list_path)
+
     if is_rig and not do_rig:
         rig_query_list = query_list
         query_list = rig_list_to_image_list(rig_query_list, session_q)
@@ -87,16 +90,16 @@ def run(outputs: Path,
             capture, query_id, query_list, sequence_length_seconds)
         image_keys = keys_from_chunks(query_chunks)
 
-    extraction_map = FeatureExtraction(outputs, capture, ref_id, configs['extraction'])
     pairs_map = PairSelection(outputs, capture, ref_id, ref_id, configs['pairs_map'])
-    matching_map = FeatureMatching(
-        outputs, capture, ref_id, ref_id, configs['matching'], pairs_map, extraction_map)
 
-    mapping = Mapping(
-        configs['mapping'], outputs, capture, ref_id, extraction_map, matching_map)
+    extraction_map = FeatureExtraction(outputs, capture, ref_id, configs['extraction'])
 
-    extraction_query = FeatureExtraction(
-        outputs, capture, query_id, configs['extraction'], image_keys)
+    matching_map = FeatureMatching(outputs, capture, ref_id, ref_id, 
+        {'extraction': configs['extraction'], 'matching': configs['matching']}, pairs_map)
+
+    mapping = Mapping(configs['mapping'], outputs, capture, ref_id, extraction_map, matching_map)
+
+    extraction_query = FeatureExtraction(outputs, capture, query_id, configs['extraction'], image_keys)
 
     if is_sequential:
         query_list, query_chunks = avoid_duplicate_keys_in_chunks(
@@ -117,11 +120,11 @@ def run(outputs: Path,
             outputs, capture, query_id, ref_id, configs['pairs_loc'], query_list,
             query_poses=T_c2w_gt)
         matching_query = FeatureMatching(
-            outputs, capture, query_id, ref_id, configs['matching_query'],
-            pairs_loc, extraction_query, extraction_map)
+            outputs, capture, query_id, ref_id, {'extraction': configs['extraction'], 'matching': configs['matching_query']},
+            pairs_loc)
         pose_estimation = PoseEstimation(
             configs['poses'], outputs, capture, query_id,
-            extraction_query, matching_query, mapping, query_list)
+            matching_query.extraction, matching_query, mapping, query_list)
         if T_c2w_gt:
             results = pose_estimation.evaluate(T_c2w_gt)
         else:
@@ -130,9 +133,12 @@ def run(outputs: Path,
     return results
 
 if __name__ == '__main__':
+    
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--ref_id', type=str, required=True)
-    parser.add_argument('--query_id', type=str, required=True)
+    parser.add_argument(
+        '--ref_id', type=str, required=True)
+    parser.add_argument(
+        '--query_id', type=str, required=True)
     parser.add_argument(
         '--captures', type=Path, default=Path("./data/"), help="Path to captures directory")
     parser.add_argument(
@@ -140,20 +146,23 @@ if __name__ == '__main__':
     parser.add_argument(
         '--retrieval', type=str, required=True, choices=list(PairSelection.methods))
     parser.add_argument(
-        '--feature', type=str, required=True, choices=list(FeatureExtraction.methods))
-    parser.add_argument(
         '--matcher', type=str, required=True, choices=list(FeatureMatching.methods))
     parser.add_argument(
+        '--feature', type=str, choices=list(FeatureExtraction.methods), default="anypoint")
+    parser.add_argument(
         '--matcher_query', type=str, choices=list(FeatureMatching.methods))
-    parser.add_argument('--use_radios', action='store_true')
-    parser.add_argument('--sequence_length_seconds', type=int)
-    parser.add_argument('--is_rig', action='store_true', help="If the session is a rigs-based one")
+    parser.add_argument(
+        '--use_radios', action='store_true')
+    parser.add_argument(
+        '--sequence_length_seconds', type=int)
+    parser.add_argument(
+        '--is_rig', action='store_true', help="If the session is a rigs-based one")
     parser.add_argument(
         '--query_filename', type=str, 
         choices=['keyframes_original.txt', 'keyframes_pruned.txt', 'keyframes_pruned_subsampled.txt'],
         default='keyframes_original.txt')
+
     args = parser.parse_args().__dict__
-    scene = args.pop("scene")
     args['capture'] = Capture.load(args.pop('captures'))
     results_ = run(**args)
 
