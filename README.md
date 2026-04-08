@@ -7,7 +7,7 @@
     ·
     <a href="https://github.com/alemercurio">Alessandro&nbsp;Mercurio</a><sup>1</sup>
     ·
-    <a href="https://joshuaoreilly.com/">Joshua&nbsp;O’Reilly</a><sup>1</sup>
+    <a href="https://joshuaoreilly.com/">Joshua&nbsp;O'Reilly</a><sup>1</sup>
     ·
     <a href="https://ch.linkedin.com/in/timengelbracht/de">Tim&nbsp;Engelbracht</a><sup>1</sup>
     ·
@@ -34,21 +34,21 @@
 <p align="center">
     <a href="https://localizoo.com/crocodl/"><img src="assets/CrocoTeaser.png" alt="Logo" width="80%"></a>
     <br>
-    <em>CroCoDL: the first dataset to contain sensor recordings from real-world robots, phones, and mixed-reality headsets, covering a total of 10 challenging locations to benchmark cross-device and human-robot visual registra- tion.</em>
+    <em>CroCoDL: the first dataset to contain sensor recordings from real-world robots, phones, and mixed-reality headsets, covering a total of 10 challenging locations to benchmark cross-device and human-robot visual registration.</em>
 </p>
 
 
 ## 0 Overview
 
-This repository hosts the source code for CroCoDL, the first dataset to contain sensor recordings from real-world robots, phones, and mixed-reality headsets, covering a total of 10 challenging locations to benchmark cross-device and human-robot visual registra-tion. The contributions of this work are:
+This repository hosts the source code for CroCoDL, the first dataset to contain sensor recordings from real-world robots, phones, and mixed-reality headsets, covering a total of 10 challenging locations to benchmark cross-device and human-robot visual registration. The contributions of this work are:
 1. The (to the best of our knowledge) largest real-world cross-device visual localization dataset, focusing on diverse capture setups and environments.
 2. A novel benchmark on cross-device visual registration that shows considerable limitations of current state-of-the-art methods.
-3. Integration of the sensor streams of Boston Dynamic’s Spot robot into LaMAR’s pseudo-GTpipeline. We will release the code for the data pre-processing and the required changes to the pipeline. 
+3. Integration of the sensor streams of Boston Dynamic's Spot robot into LaMAR's pseudo-GT pipeline. We will release the code for the data pre-processing and the required changes to the pipeline.
 
 Here is a quick breakdown of the repository:
 
 ```
-crocodile-benchmark/                                 
+crocodl-benchmark/                                 
 ├── assets/                   # README.md images
 ├── lamar/                    # Benchmarking pipeline code
 ├── pipelines/                # End to end pipelines for processing data
@@ -60,7 +60,7 @@ crocodile-benchmark/
 ├── CAPTURE.md                # Information about capture format
 ├── DATA.md                   # Information about data release structure
 ├── Dockerfile                # Docker container installation folder
-└── location_release.xlsx     # Sheet containing inormation about data release locations            
+└── location_release.xlsx     # Sheet containing information about data release locations            
 ```
 
 ## 1 Getting started
@@ -84,7 +84,7 @@ conda activate croco
 We have used conda, however, you could also choose venv.
 
 #### 1.1.3 Install external dependencies:
-Depending on whether you would like to use exclusively use benchmarking pipeline or scantools pipeline also, you can run:
+Depending on whether you would like to exclusively use the benchmarking pipeline or the scantools pipeline also, you can run:
 ```
 chmod +x ./scripts/*
 ./scripts/install_all_dependencies.sh
@@ -105,7 +105,7 @@ for benchmarking dependencies only. Full package of dependencies, installed by i
 You can install these manually too using provided scripts inside ./scripts/install_{name_of_the_package}.
 
 #### 1.1.4 Additional python dependencies:
-Last two are only required by scantools pipeline, and are not installed by install_benchmarking_dependencies. Now, additional python dependencies need to be installed. You can do this by running: 
+The last two are only required by the scantools pipeline, and are not installed by install_benchmarking_dependencies. Additional python dependencies need to be installed. You can do this by running:
 ```
 python -m pip install -e .
 ```
@@ -124,7 +124,7 @@ python -m pip install -e .[dev]
 ### 1.2 Installation Docker
 
 The Dockerfile provided in this project has multiple stages, two of which are:
-`scantools` and `lamar`. For scantools and benchamrking, respectively. You can build these images using:
+`scantools` and `lamar`. For scantools and benchmarking, respectively. You can build these images using:
 
 #### 1.2.1 Build the 'scantools' stage:
 ```
@@ -137,23 +137,23 @@ docker build --target lamar -t croco:lamar -f Dockerfile ./
 ```
 
 ## 3 Functionalities
-In this section we will list available scripts and describe how to run our pipeline on both GPU and Docker. For simplicity, we will list only script you are directly running using bash scripts. To understand folder structure better, you may have a look at our [data](DATA.md) section. Before running any code, you should set some environmental variables. You can do this with:
+In this section we will list available scripts and describe how to run our pipeline on both GPU and Docker. For simplicity, we will list only scripts you are directly running using bash scripts. To understand the folder structure better, you may have a look at our [data](DATA.md) section. Before running any code, you should set some environmental variables. You can do this with:
 
 ```
 export CAPTURE_DIR="path/to/capture"
 export LOCATION="location"
 ```
 
-these two are used by all our scripts, and none of the bash scripts will run without them. Capture directory has to end with **capture/** folder. Setting **LOCATION** environmental variable is not needed for benchmarking as none of the scripts that are run bellow, do not use this variable. For the rest of the code, using **LOCATION** might be needed. Some of the scripts require more arguments, so we strongly advise to have a look at them before running and change them if needed. All the arguments are explained inside each bash script and corresponding docustrings in python files. Before code is run, you will get the printout of all arguments you are using, and a prompt to confirm the run. In sections [3.3 Running on GPU](#33-running-on-gpu) and [3.4 Running in Docker](#34-running-in-docker), we will list all the arguments user can alter along with two mentioned environmental variables. 
+These two are used by all our scripts, and none of the bash scripts will run without them. The capture directory has to end with the **capture/** folder. Some of the scripts require more arguments, so we strongly advise having a look at them before running and changing them if needed. All the arguments are explained inside each bash script and corresponding docstrings in python files. Before code is run, you will get a printout of all arguments you are using, and a prompt to confirm the run. In sections [3.3 Running on GPU](#33-running-on-gpu) and [3.4 Running in Docker](#34-running-in-docker), we will list all the arguments a user can alter along with the two mentioned environmental variables.
 
 ### 3.1 Processing pipeline
-Processing transforms raw data sessions into capture format, aligns capture sessions to ground truth scan, aligns sessions cross device, creates map and query split and finaly prunes query sessions. In the order of processing here is the list of run_{script_name}.py scripts that we are running to process data:
+Processing transforms raw data sessions into capture format, aligns capture sessions to the ground truth scan, aligns sessions cross-device, creates a map and query split, and finally prunes query sessions. In the order of processing, here is the list of run_{script_name}.py scripts that we run to process data:
 
 ### *Raw data to Capture format*
   1) [`scantools/run_merge_bagfiles.py`](scantools/run_merge_bagfiles.py) - Combines Nuc and Orin bagfiles into a single, merged bagfile.  
     Output: `{session_id}-{scene_name}.bag` for each pair of Nuc and Orin bagfiles given by the input txt file. Scene names are needed for further processing that is custom for each location.
 
-  2) [`scantools/run_spot_to_capture.py`](scantools/run_spot_to_capture.py) - Processes all merged bagfiles from a folder into a capture format spot sessions.  
+  2) [`scantools/run_spot_to_capture.py`](scantools/run_spot_to_capture.py) - Processes all merged bagfiles from a folder into capture format Spot sessions.  
     Output: `sessions/spot_{session_id}/` capture format folder for each session in input folder.
 
   3) [`scantools/run_phone_to_capture.py`](scantools/run_phone_to_capture.py) - Processes all raw iOS sessions into a capture format.  
@@ -189,46 +189,68 @@ Processing transforms raw data sessions into capture format, aligns capture sess
   1) [`scantools/run_combine_sequences.py`](scantools/run_combine_sequences.py) - Combines multiple capture sessions into a single capture session.  
     Output: `{combined_session_id}/` folder with combined sessions in capture format.
 
-  2) [`scantools/run_map_query_split_manual.py`](scantools/run_map_query_split_manual.py) - Creates map and query splits using 1 and `.txt` inputs in `location/*.txt`. Also transforms map sessions such that they are randomized.
-    Output: `{combined_session_id}/` folder with map/query split in capture format for all selected devices, transformation applied in `transformations.txt`and visualizations in `visualizations/` of all intermediate steps.
+  2) [`scantools/run_map_query_split_manual.py`](scantools/run_map_query_split_manual.py) - Creates map and query splits using 1 and `.txt` inputs in `location/*.txt`. Also transforms map sessions such that they are randomized.  
+    Output: `{combined_session_id}/` folder with map/query split in capture format for all selected devices, transformation applied in `transformations.txt` and visualizations in `visualizations/` of all intermediate steps.
 
-  3) [`scantools/run_query_pruning.py`](scantools/run_query_pruning.py) - Prunes query trajectories of all devices such that all parts of the locations are covered in each query trajectory and subsamples them to achieve equal desnity overall.
-    Output: `{map/query_session_id}/proc/keyframes_*.txt` containing all the keyframes selected by the algorithm in each of its steps (original, after pruning annd after subsampling) and visualizations in `visualizations/` of all intermediate steps along with a configuration file `query_pruning_config.txt` used for pruning.
+  3) [`scantools/run_split_spot.py`](scantools/run_split_spot.py) - Splits a Spot session into multiple sub-sessions by trajectory segments, copying the relevant raw images and depth maps for each segment.  
+    Output: `sessions/{spot_session_id}_{segment_idx}/` capture format folder for each trajectory segment.
+
+  4) [`scantools/run_query_pruning.py`](scantools/run_query_pruning.py) - Prunes query trajectories of all devices such that all parts of the location are covered in each query trajectory and subsamples them to achieve equal density overall.  
+    Output: `{map/query_session_id}/proc/keyframes_*.txt` containing all the keyframes selected by the algorithm in each of its steps (original, after pruning and after subsampling) and visualizations in `visualizations/` of all intermediate steps along with a configuration file `query_pruning_config.txt` used for pruning.
 
 ### *Visualization*
-  1) [`scantools/run_visualize_trajectories.py`](scantools/run_visualize_trajectories.py) - Visualizes all available trajectories for selected devices.
+  1) [`scantools/run_visualize_trajectories.py`](scantools/run_visualize_trajectories.py) - Visualizes all available trajectories for selected devices.  
     Output: `visualizations/trajectories/trajectory_{device}.png`.
 
-  2) [`scantools/run_visualize_map_query.py`](scantools/run_visualize_map_query.py) - Visualizes all map and query overlap for selected devices.
+  2) [`scantools/run_visualize_map_query.py`](scantools/run_visualize_map_query.py) - Visualizes all map and query overlap for selected devices.  
     Output: `visualizations/map_query/trajectory_{device}.png`.
 
-  3) [`scantools/run_visualize_map_query_matrix.py`](scantools/run_visualize_map_query_matrix.py) - Visualizes matrix of map and query devices for all selected devices.
+  3) [`scantools/run_visualize_map_query_matrix.py`](scantools/run_visualize_map_query_matrix.py) - Visualizes matrix of map and query devices for all selected devices.  
     Output: `visualizations/map_query/matrix_{device_list}.png`.
 
-  4) [`scantools/run_visualize_map_query_renders.py`](scantools/run_visualize_map_query_renders.py) - Visualizes comparison of renders and raw images in all map/query session that are avialable. It also saves a video of these images stiched together.
-    Output: `visualizations/renders/{device}_{map/query}/*png` and `visualizations/render_videos/{device}_{map/query}.mp4`.
+  4) [`scantools/run_visualize_map_query_renders.py`](scantools/run_visualize_map_query_renders.py) - Visualizes comparison of renders and raw images in all map/query sessions that are available. Also saves a render video and per-camera trajectory videos.  
+    Output: `visualizations/renders/{device}_{map/query}/*.png`, `visualizations/render_videos/{device}_{map/query}.mp4`, and `visualizations/trajectory_videos/{device}_{map/query}/{camera_name}.mp4`.
 
 ### *Anonymization*
-  1) [`scantools/run_image_anonymization.py`](scantools/run_image_anonymization.py) - Anonymizes all images from sessions. Faces and license plates using BrigtherAI or EgoBlur. You can anonymize both single session or the whole location. If you wish to use EgoBlur, download [ego_blur_face.jit](https://www.projectaria.com/tools/egoblur/) and [ego_blur_lp.jit](https://www.projectaria.com/tools/egoblur/) and put them inside [`anonymize/`](anonymize/)
+  1) [`scantools/run_image_anonymization.py`](scantools/run_image_anonymization.py) - Anonymizes all images from sessions using BrighterAI or EgoBlur (faces and license plates). You can anonymize both a single session or the whole location. If you wish to use EgoBlur, download [ego_blur_face.jit](https://www.projectaria.com/tools/egoblur/) and [ego_blur_lp.jit](https://www.projectaria.com/tools/egoblur/) and put them inside [`anonymize/`](anonymize/).  
     Output: `anonymization_{method}/` folder containing anonymized sessions and additional files.
 
 ### 3.2 Benchmarking pipeline
-After fully processing the pipeline and confirming with visualizations you can now run the benchmarking pipeline. In this case you can choose whether to choose original keyframes, the ones generated after pruning or the ones generated after subsampling. These could be found in the corresponding `{map/query_session_id}/proc/keyframes_*.txt`, where the start can be: `original`, `_pruned` or `_pruned_subsampled`.
+After fully processing the pipeline and confirming with visualizations you can now run the benchmarking pipeline. You can choose whether to use original keyframes, the ones generated after pruning, or the ones generated after subsampling. These can be found in the corresponding `{map/query_session_id}/proc/keyframes_*.txt`, where the suffix can be: `original`, `_pruned` or `_pruned_subsampled`.
 
-  1) [`lamar/run.py`](lamar/run.py) - Runs the benchmarking  for the given pair of map and query capture sessions.
-    Output: `benchmarking/` folder containing all intermediate data for benchmarking, features matches etc.
+  1) [`lamar/run.py`](lamar/run.py) - Runs the benchmarking for the given pair of map and query capture sessions using a standard retrieval + feature matching pipeline.  
+    Output: `benchmarking/` folder containing all intermediate data for benchmarking, features, matches etc.
 
-  2) [`lamar/read_benchmarking_output.py`](lamar/read_benchmarking_output.py) - Creates confusion matrix out of .txt file generated by [`scantools/run_benchmarking.py`](benchmarking_scripts/run_benchmarking.sh). You can read more here: [`benchmarking_scripts/run_benchmarking.sh`](benchmarking_scripts/run_benchmarking.sh).
+  2) [`lamar/run_custom.py`](lamar/run_custom.py) - Runs the benchmarking using a registered custom pipeline. Custom pipelines can be added in [`lamar/custom_pipelines/`](lamar/custom_pipelines/). Use [`lamar/custom_pipelines/template.py`](lamar/custom_pipelines/template.py) as a starting point — you only need to implement the `_run` method.  
+    Output: `benchmarking/` folder containing all intermediate data.
 
-  3) [`lamar/combine_results_crocodl.py`](lamar/combine_results_crocodl.py) - Combines output of the benchmarking files into a single .zip file in challenge format. You can read more about arguments here: [`benchmarking_scripts/run_combine_results.sh`](benchmarking_scripts/run_combine_results.sh).
+  3) [`lamar/read_benchmarking_output.py`](lamar/read_benchmarking_output.py) - Creates a confusion matrix from a `.txt` file generated by [`benchmark_scripts/run_benchmarking.sh`](benchmark_scripts/run_benchmarking.sh). You can read more here: [`benchmark_scripts/run_benchmarking.sh`](benchmark_scripts/run_benchmarking.sh).
+
+  4) [`lamar/combine_results_crocodl.py`](lamar/combine_results_crocodl.py) - Combines output of the benchmarking files into a single `.zip` file in challenge format. You can read more about arguments here: [`benchmark_scripts/run_combine_results.sh`](benchmark_scripts/run_combine_results.sh).
+
+#### Available methods
+
+The following methods are available for use with `lamar/run.py` via the `--retrieval`, `--feature`, and `--matcher` arguments:
+
+| Argument | Available options |
+|----------|------------------|
+| `--retrieval` | `netvlad`, `megaloc`, `salad`, `openibl`, `cosplace`, `overlap`, `overlap-fullmesh`, `fusion` |
+| `--feature` | `anypoint` (dense only), `superpoint`, `r2d2`, `d2net`, `d2net-ms`, `sift`, `sosnet` |
+| `--matcher` | `mast3r`, `loftr`, `loftr_superpoint`, `lightglue`, `lightglue_sift`, `superglue`, `mnn`, `ratio_mnn_0_9`, `ratio_mnn_0_8`, `adalam` |
+
+Dense matchers (`mast3r`, `loftr`, `loftr_superpoint`) do not require a local feature extraction step and should be used with `--feature anypoint`. The following custom pipelines are available for `lamar/run_custom.py` via the `--pipeline` argument:
+
+| Pipeline | Description |
+|----------|-------------|
+| `Mast3r` | End-to-end dense matching and localization using MASt3R |
+| `LoftrMetric3dv2` | Dense matching with LoFTR combined with Metric3Dv2 depth estimation |
 
 ### 3.3 Running on GPU
 In case you are running our pipeline locally, you can use these given example bash scripts with arguments:
 
-  1) [`scantools_scripts/run_merge_spot.sh`](scantools_scripts/run_merge_spot.sh) - Runs [`scantools/run_merge_bagfiles.py`](scantools/run_merge_bagfiles.py) locally. User arguments and flags: **NONE**. 
+  1) [`scantools_scripts/run_merge_spot.sh`](scantools_scripts/run_merge_spot.sh) - Runs [`scantools/run_merge_bagfiles.py`](scantools/run_merge_bagfiles.py) locally. User arguments and flags: **NONE**.
 
-  2) [`scantools_scripts/run_spot_to_capture.sh`](scantools_scripts/run_spot_to_capture.sh) - Runs [`scantools/run_spot_to_capture.py`](scantools/run_spot_to_capture.py) 
-  locally. User arguments and flags: **overwrite** (overwrites existing sessions).
+  2) [`scantools_scripts/run_spot_to_capture.sh`](scantools_scripts/run_spot_to_capture.sh) - Runs [`scantools/run_spot_to_capture.py`](scantools/run_spot_to_capture.py) locally. User arguments and flags: **overwrite** (overwrites existing sessions).
 
   3) [`scantools_scripts/run_phone_to_capture.sh`](scantools_scripts/run_phone_to_capture.sh) - Runs [`scantools/run_phone_to_capture.py`](scantools/run_phone_to_capture.py) locally. User arguments and flags: **NONE**.
 
@@ -238,40 +260,44 @@ In case you are running our pipeline locally, you can use these given example ba
 
   6) [`scantools_scripts/run_map_query_split.sh`](scantools_scripts/run_map_query_split.sh) - Runs [`scantools/run_map_query_split_manual.py`](scantools/run_map_query_split_manual.py) locally. User arguments and flags: **{device}m** (flag for processing {device} map), **{device}q** (flag for processing {device} query), **transform** (apply 4DOF transformation on map trajectories and save them), **just_vis** (only visualise without changing existing data).
 
-  7) [`scantools_scripts/run_query_pruning.sh`](scantools_scripts/run_query_pruning.sh) - Runs [`scantools/run_query_pruning.py`](scantools/run_query_pruning.py) locally. User arguments and flags: **just_vis** (only visualise without changing existing data).
+  7) [`scantools_scripts/run_split_spot.sh`](scantools_scripts/run_split_spot.sh) - Runs [`scantools/run_split_spot.py`](scantools/run_split_spot.py) locally. Splits a Spot session into sub-sessions by trajectory segments. User arguments and flags: **SESSION_ID** (Spot session to split), **NUM_SPLITS** (number of segments to split into).
 
-  8) [`scantools_scripts/run_vis_trajectories.sh`](scantools_scripts/run_vis_trajectories.sh) - Runs [`scantools/run_visualize_trajectories.py`](scantools/run_visualize_trajectories.py) locally. User arguments and flags: **{device}** (flag for visualizing {device}).
+  8) [`scantools_scripts/run_query_pruning.sh`](scantools_scripts/run_query_pruning.sh) - Runs [`scantools/run_query_pruning.py`](scantools/run_query_pruning.py) locally. User arguments and flags: **just_vis** (only visualise without changing existing data).
 
-  9) [`scantools_scripts/run_vis_map_query.sh`](scantools_scripts/run_vis_map_query.sh) - Runs [`scantools/run_visualize_map_query.py`](scantools/run_visualize_map_query.py) locally. User arguments and flags: **{device}** (flag for visualizing {device}).
+  9) [`scantools_scripts/run_vis_trajectories.sh`](scantools_scripts/run_vis_trajectories.sh) - Runs [`scantools/run_visualize_trajectories.py`](scantools/run_visualize_trajectories.py) locally. User arguments and flags: **{device}** (flag for visualizing {device}).
 
-  10) [`scantools_scripts/run_vis_map_query_matrix.sh`](scantools_scripts/run_vis_map_query_matrix.sh) - Runs [`scantools/run_visualize_map_query_matrix.py`](scantools/run_visualize_map_query_matrix.py) for all device combinations locally. User arguments and flags: **FLAGS** (list of which devices to visualize).
+  10) [`scantools_scripts/run_vis_map_query.sh`](scantools_scripts/run_vis_map_query.sh) - Runs [`scantools/run_visualize_map_query.py`](scantools/run_visualize_map_query.py) locally. User arguments and flags: **{device}** (flag for visualizing {device}).
 
-  11) [`scantools_scripts/run_vis_map_query_renders.sh`](scantools_scripts/run_vis_map_query_renders.sh) - Runs [`scantools/run_visualize_map_query_renders.py`](scantools/run_visualize_map_query_renders.py) for all available map/query sessions locally. User arguments and flags: **skip** (rate of subsampling of images when rendering), **num_workers** (number of parallel processes), **save_video** (flag for saving a video made out of rendered images), **simplified_mesh** (flag for using simplified mesh for OEM errors), **pruned_keyframes** (flag for using pruned_subsampled keyframes only for rendering).
+  11) [`scantools_scripts/run_vis_map_query_matrix.sh`](scantools_scripts/run_vis_map_query_matrix.sh) - Runs [`scantools/run_visualize_map_query_matrix.py`](scantools/run_visualize_map_query_matrix.py) for all device combinations locally. User arguments and flags: **FLAGS** (list of which devices to visualize).
 
-  12) [`benchmark_scripts/run_benchmarking.sh`](benchmark_scripts/run_benchmarking.sh) - Runs [`lamar/run.py`](lamar/run.py) locally. User arguments and flags: **OUTPUT_DIR** (location to save benchmarking output), **LOCATIONS** (list of locations to benchmark), **QUERIES_FILE** (name of the file in query session to use for selecting query keyframes), **LOCAL_FEATURE_METHOD** (local feature extraction method), **MATCHING_METHOD** (feature matching method), **GLOBAL_FEATURE_METHOD** (global feature extraction method), **DEVICES_REF** (list of devices to use as reference maps), **DEVICES_QUERY** (list of devices to use as query maps).
+  12) [`scantools_scripts/run_vis_map_query_renders.sh`](scantools_scripts/run_vis_map_query_renders.sh) - Runs [`scantools/run_visualize_map_query_renders.py`](scantools/run_visualize_map_query_renders.py) for all available map/query sessions locally. User arguments and flags: **skip** (rate of subsampling of images when rendering), **num_workers** (number of parallel processes), **save_video** (flag for saving render and trajectory videos), **simplified_mesh** (flag for using simplified mesh to avoid OOM errors), **pruned_keyframes** (flag for using pruned_subsampled keyframes only for rendering).
 
-  13) [`benchmark_scripts/run_read_benchmarking_output.sh`](benchmark_scripts/run_read_benchmarking_output.sh) - In case you saved output to a .txt file, as suggested by [`benchmark_scripts/run_benchmarking.sh`](benchmark_scripts/run_benchmarking.sh), this script runs [`lamar/read_benchmarking_output.py`](lamar/read_benchmarking_output.py) locally and creates confusion matrix for all generated output. User arguments and flags: **OUTPUT_FILE** (path to the output file from benchmarking, passed as a command line argument)
+  13) [`benchmark_scripts/run_benchmarking.sh`](benchmark_scripts/run_benchmarking.sh) - Runs [`lamar/run.py`](lamar/run.py) locally. User arguments and flags: **OUTPUT_DIR** (location to save benchmarking output), **LOCATIONS** (list of locations to benchmark), **QUERIES_FILE** (name of the file in query session to use for selecting query keyframes), **LOCAL_FEATURE_METHOD** (local feature extraction method), **MATCHING_METHOD** (feature matching method), **GLOBAL_FEATURE_METHOD** (global feature extraction method), **DEVICES_REF** (list of devices to use as reference maps), **DEVICES_QUERY** (list of devices to use as query maps).
 
-  14) [`scantools_scripts/run_anonymization.sh`](scantools_scripts/run_anonymization.sh) - Runs [`scantools/run_image_anonymization.py`](scantools/run_image_anonymization.py) locally. User arguments and flags: **inplace** (anonymize sessions inplace), **session_id** (anonymize given session, if not set, whole location is anonymized), **apikey** (apikey to use for BrighterAI), **sequential** (process images sequentially, compatible with BrighterAI), **overwrite** (overwrite existing sessions if inplace is not set)
+  14) [`benchmark_scripts/run_benchmarking_custom.sh`](benchmark_scripts/run_benchmarking_custom.sh) - Runs [`lamar/run_custom.py`](lamar/run_custom.py) locally using a registered custom pipeline. User arguments and flags: **PIPELINE** (name of the registered custom pipeline), **OUTPUT_DIR** (location to save benchmarking output), **LOCATIONS** (list of locations to benchmark), **QUERIES_FILE** (keyframes file to use), **DEVICES_REF** (list of reference map devices), **DEVICES_QUERY** (list of query devices).
 
-  15) [`benchmark_scripts/run_combine_results.sh`](benchmark_scripts/run_combine_results.sh) - Runs [`lamar/combine_results_crocodl.py`](lamar/combine_results_crocodl.py) locally. User arguments and flags: **BENCHMARKING_DIR** (name of the folder within capture folder where benchmarking results are stored), **DESCRIPTION_FILE** (file with model description), **OUTPUT_DIR** (output directory), **LOCAL_FEATURE_METHOD** (local feature extraction method), **MATCHING_METHOD** (feature matching method), **GLOBAL_FEATURE_METHOD** (global feature extraction method), **SCENES** (list of scenes to combine results for), **DEVICES_MAP** (list of devices to use for map sessions), **DEVICES_QUERY** (list of devices to use for query sessions)
+  15) [`benchmark_scripts/run_read_benchmarking_output.sh`](benchmark_scripts/run_read_benchmarking_output.sh) - In case you saved output to a `.txt` file, as suggested by [`benchmark_scripts/run_benchmarking.sh`](benchmark_scripts/run_benchmarking.sh), this script runs [`lamar/read_benchmarking_output.py`](lamar/read_benchmarking_output.py) locally and creates a confusion matrix for all generated output. User arguments and flags: **OUTPUT_FILE** (path to the output file from benchmarking, passed as a command line argument).
 
-  16) [`benchmark_scripts/run_download_data.sh`](benchmark_scripts/run_download_data.sh) - Runs data download for the challenge and/or full release data. User arguments and flags: **CHALLENGE_DATA** (run challenge data download), **FULL_DATA** (run full release data download), **RAW_DATA** (run raw data download), **CHALLENGE_SCENES** (list of challenge scenes to download), **FULL_RELEASE_SCENES** (list of full release scenes to download), **RAW_SCENES** (list of raw data scenes to download), **MAX_WORKERS** (number of workers to be used with huggingface-api to download data)
+  16) [`scantools_scripts/run_anonymization.sh`](scantools_scripts/run_anonymization.sh) - Runs [`scantools/run_image_anonymization.py`](scantools/run_image_anonymization.py) locally. User arguments and flags: **inplace** (anonymize sessions inplace), **session_id** (anonymize given session, if not set, whole location is anonymized), **apikey** (apikey to use for BrighterAI), **sequential** (process images sequentially, compatible with BrighterAI), **overwrite** (overwrite existing sessions if inplace is not set).
+
+  17) [`benchmark_scripts/run_combine_results.sh`](benchmark_scripts/run_combine_results.sh) - Runs [`lamar/combine_results_crocodl.py`](lamar/combine_results_crocodl.py) locally. User arguments and flags: **BENCHMARKING_DIR** (name of the folder within capture folder where benchmarking results are stored), **DESCRIPTION_FILE** (file with model description), **OUTPUT_DIR** (output directory), **LOCAL_FEATURE_METHOD** (local feature extraction method), **MATCHING_METHOD** (feature matching method), **GLOBAL_FEATURE_METHOD** (global feature extraction method), **SCENES** (list of scenes to combine results for), **DEVICES_MAP** (list of devices to use for map sessions), **DEVICES_QUERY** (list of devices to use for query sessions).
+
+  18) [`benchmark_scripts/run_download_data.sh`](benchmark_scripts/run_download_data.sh) - Runs data download for the challenge and/or full release data. User arguments and flags: **CHALLENGE_DATA** (run challenge data download), **FULL_DATA** (run full release data download), **RAW_DATA** (run raw data download), **CHALLENGE_SCENES** (list of challenge scenes to download), **FULL_RELEASE_SCENES** (list of full release scenes to download), **RAW_SCENES** (list of raw data scenes to download), **MAX_WORKERS** (number of workers to be used with huggingface-api to download data).
 
 ### 3.4 Running in Docker
 In case you are running our pipeline on Docker, you can use these given example bash scripts with arguments:
 
-  1) [`scantools_scripts/docker_run_merge_spot.sh`](scantools_scripts/docker_run_merge_spot.sh) - Runs [`scantools/run_merge_bagfiles.py`](scantools/run_merge_bagfiles.py) in a Docker container. User arguments and flags: **NONE**. 
+  1) [`scantools_scripts/docker_run_merge_spot.sh`](scantools_scripts/docker_run_merge_spot.sh) - Runs [`scantools/run_merge_bagfiles.py`](scantools/run_merge_bagfiles.py) in a Docker container. User arguments and flags: **NONE**.
 
-  2) [`scantools_scripts/docker_run_spot_to_capture.sh`](scantools_scripts/docker_run_spot_to_capture.sh) - Runs [`scantools/run_spot_to_capture.py`](scantools/run_spot_to_capture.py) in a Docker container. User arguments and flags: **overwrite** (overwrites existing sessions).  
+  2) [`scantools_scripts/docker_run_spot_to_capture.sh`](scantools_scripts/docker_run_spot_to_capture.sh) - Runs [`scantools/run_spot_to_capture.py`](scantools/run_spot_to_capture.py) in a Docker container. User arguments and flags: **overwrite** (overwrites existing sessions).
 
-  3) [`scantools_scripts/docker_run_phone_to_capture.sh`](scantools_scripts/docker_run_phone_to_capture.sh) - Runs [`scantools/run_phone_to_capture.py`](scantools/run_phone_to_capture.py) in a Docker container. User arguments and flags: **NONE**. 
+  3) [`scantools_scripts/docker_run_phone_to_capture.sh`](scantools_scripts/docker_run_phone_to_capture.sh) - Runs [`scantools/run_phone_to_capture.py`](scantools/run_phone_to_capture.py) in a Docker container. User arguments and flags: **NONE**.
 
-  4) [`scantools_scripts/docker_run_process_navvis.sh`](scantools_scripts/docker_run_process_navvis.sh) - Runs [`pipelines/pipeline_scans.py`](pipelines/pipeline_scans.py) in a Docker container. User arguments and flags: **SESSIONS** (list of sessions to merge into single navvis session), **num_workers** (number of parallel processes). 
+  4) [`scantools_scripts/docker_run_process_navvis.sh`](scantools_scripts/docker_run_process_navvis.sh) - Runs [`pipelines/pipeline_scans.py`](pipelines/pipeline_scans.py) in a Docker container. User arguments and flags: **SESSIONS** (list of sessions to merge into single navvis session), **num_workers** (number of parallel processes).
 
-  5) [`scantools_scripts/docker_run_align_sessions.sh`](scantools_scripts/docker_run_align_sessions.sh) - Runs [`pipelines/pipeline_sequences.py`](pipelines/pipeline_sequences.py) in a Docker container. User arguments and flags: **skip_{device}** (skip processing given {device}), **run_lamar_splitting** (performs automatic map/query split from [lamar]("https://lamar.ethz.ch/")).  
+  5) [`scantools_scripts/docker_run_align_sessions.sh`](scantools_scripts/docker_run_align_sessions.sh) - Runs [`pipelines/pipeline_sequences.py`](pipelines/pipeline_sequences.py) in a Docker container. User arguments and flags: **skip_{device}** (skip processing given {device}), **run_lamar_splitting** (performs automatic map/query split from [lamar]("https://lamar.ethz.ch/")).
 
-  6) [`scantools_scripts/docker_run_map_query_split.sh`](scantools_scripts/docker_run_map_query_split.sh) - Runs [`scantools/run_map_query_split_manual.py`](scantools/run_map_query_split_manual.py) in a Docker container. User arguments and flags: **{device}m** (flag for processing {device} map), **{device}q** (flag for processing {device} query), **transform** (apply 4DOF transformation on map trajectories and save them), **just_vis** (only visualise without changing existing data). 
+  6) [`scantools_scripts/docker_run_map_query_split.sh`](scantools_scripts/docker_run_map_query_split.sh) - Runs [`scantools/run_map_query_split_manual.py`](scantools/run_map_query_split_manual.py) in a Docker container. User arguments and flags: **{device}m** (flag for processing {device} map), **{device}q** (flag for processing {device} query), **transform** (apply 4DOF transformation on map trajectories and save them), **just_vis** (only visualise without changing existing data).
 
   7) [`scantools_scripts/docker_run_query_pruning.sh`](scantools_scripts/docker_run_query_pruning.sh) - Runs [`scantools/run_query_pruning.py`](scantools/run_query_pruning.py) in a Docker container. User arguments and flags: **just_vis** (only visualise without changing existing data).
 
@@ -279,34 +305,36 @@ In case you are running our pipeline on Docker, you can use these given example 
 
   9) [`scantools_scripts/docker_run_vis_map_query.sh`](scantools_scripts/docker_run_vis_map_query.sh) - Runs [`scantools/run_visualize_map_query.py`](scantools/run_visualize_map_query.py) in a Docker container. User arguments and flags: **{device}** (flag for visualizing {device}).
 
-  10) [`scantools_scripts/docker_run_vis_map_query_matrix.sh`](scantools_scripts/docker_run_vis_map_query_matrix.sh) - Runs [`scantools/run_visualize_map_query_matrix.py`](scantools/run_visualize_map_query_matrix.py) for all device combinations loin a Docker containercally. User arguments and flags: **FLAGS** (list of which devices to visualize).
+  10) [`scantools_scripts/docker_run_vis_map_query_matrix.sh`](scantools_scripts/docker_run_vis_map_query_matrix.sh) - Runs [`scantools/run_visualize_map_query_matrix.py`](scantools/run_visualize_map_query_matrix.py) for all device combinations in a Docker container. User arguments and flags: **FLAGS** (list of which devices to visualize).
 
-  11) [`scantools_scripts/docker_run_vis_map_query_renders.sh`](scantools_scripts/run_vis_map_query_renders.sh) - Runs [`scantools/run_visualize_map_query_renders.py`](scantools/run_visualize_map_query_renders.py) for all available map/query sessions in a Docker container. User arguments and flags: **{skip}** (rate of subsampling of images when rendering), **num_workers** (number of parallel processes), **save_video** (flag for saving a video made out of rendered images), **simplified_mesh** (flag for using simplified mesh for OEM errors), **pruned_keyframes** (flag for using pruned_subsampled keyframes only for rendering).
+  11) [`scantools_scripts/docker_run_vis_map_query_renders.sh`](scantools_scripts/docker_run_vis_map_query_renders.sh) - Runs [`scantools/run_visualize_map_query_renders.py`](scantools/run_visualize_map_query_renders.py) for all available map/query sessions in a Docker container. User arguments and flags: **skip** (rate of subsampling of images when rendering), **num_workers** (number of parallel processes), **save_video** (flag for saving render and trajectory videos), **simplified_mesh** (flag for using simplified mesh to avoid OOM errors), **pruned_keyframes** (flag for using pruned_subsampled keyframes only for rendering).
 
-  12) [`benchmark_scripts/docker_run_benchmarking.sh`](benchmark_scripts/run_benchmarking.sh) - Runs [`lamar/run.py`](lamar/run.py) in a Docker container. User arguments and flags: **OUTPUT_DIR** (location to save benchmarking output), **LOCATIONS** (list of locations to benchmark), **QUERIES_FILE** (name of the file in query session to use for selecting query keyframes), **LOCAL_FEATURE_METHOD** (local feature extraction method), **MATCHING_METHOD** (feature matching method), **GLOBAL_FEATURE_METHOD** (global feature extraction method), **DEVICES_REF** (list of devices to use as reference maps), **DEVICES_QUERY** (list of devices to use as query maps).
+  12) [`scantools_scripts/run_vis_all.sh`](scantools_scripts/run_vis_all.sh) - Convenience script that runs all four visualization Docker scripts in sequence (trajectories, map/query, map/query matrix, renders). User arguments and flags: **NONE** (inherits settings from individual scripts).
 
-  13) [`benchmark_scripts/docker_run_read_benchmarking_output.sh`](benchmark_scripts/docker_run_read_benchmarking_output.sh) - In case you saved output to a .txt file, as suggested by [`benchmark_scripts/docker_run_benchmarking.sh`](benchmark_scripts/docker_run_benchmarking.sh), this script runs [`lamar/run_read_benchmarking_output.py`](lamar/run_read_benchmarking_output.py) in a Docker container and creates confusion matrix for all generated output. User arguments and flags: **OUTPUT_FILE** (path to the output file from benchmarking, passed as a command line argument)
+  13) [`benchmark_scripts/docker_run_benchmarking.sh`](benchmark_scripts/docker_run_benchmarking.sh) - Runs [`lamar/run.py`](lamar/run.py) in a Docker container. User arguments and flags: **OUTPUT_DIR** (location to save benchmarking output), **LOCATIONS** (list of locations to benchmark), **QUERIES_FILE** (name of the file in query session to use for selecting query keyframes), **LOCAL_FEATURE_METHOD** (local feature extraction method), **MATCHING_METHOD** (feature matching method), **GLOBAL_FEATURE_METHOD** (global feature extraction method), **DEVICES_REF** (list of devices to use as reference maps), **DEVICES_QUERY** (list of devices to use as query maps).
 
-  14) [`scantools_scripts/docker_run_anonymization.sh`](scantools_scripts/docker_run_anonymization.sh) - Runs [`scantools/run_image_anonymization.py`](scantools/run_image_anonymization.py) in a Docker container. User arguments and flags: **inplace** (anonymize sessions inplace), **session_id** (anonymize given session, if not set, whole location is anonymized), **apikey** (apikey to use for BrighterAI), **sequential** (process images sequentially, compatible with BrighterAI), **overwrite** (overwrite existing sessions if inplace is not set)
-  
-  15) [`benchmark_scripts/docker_run_combine_results.sh`](benchmark_scripts/docker_run_combine_results.sh) - Runs [`lamar/combine_results_crocodl.py`](lamar/combine_results_crocodl.py) in a Docker container. User arguments and flags: **BENCHMARKING_DIR** (name of the folder within capture folder where benchmarking results are stored), **DESCRIPTION_FILE** (file with model description), **OUTPUT_DIR** (output directory), **LOCAL_FEATURE_METHOD** (local feature extraction method), **MATCHING_METHOD** (feature matching method), **GLOBAL_FEATURE_METHOD** (global feature extraction method), **SCENES** (list of scenes to combine results for), **DEVICES_MAP** (list of devices to use for map sessions), **DEVICES_QUERY** (list of devices to use for query sessions)
+  14) [`benchmark_scripts/docker_run_read_benchmarking_output.sh`](benchmark_scripts/docker_run_read_benchmarking_output.sh) - In case you saved output to a `.txt` file, as suggested by [`benchmark_scripts/docker_run_benchmarking.sh`](benchmark_scripts/docker_run_benchmarking.sh), this script runs [`lamar/read_benchmarking_output.py`](lamar/read_benchmarking_output.py) in a Docker container and creates a confusion matrix for all generated output. User arguments and flags: **OUTPUT_FILE** (path to the output file from benchmarking, passed as a command line argument).
+
+  15) [`scantools_scripts/docker_run_anonymization.sh`](scantools_scripts/docker_run_anonymization.sh) - Runs [`scantools/run_image_anonymization.py`](scantools/run_image_anonymization.py) in a Docker container. User arguments and flags: **inplace** (anonymize sessions inplace), **session_id** (anonymize given session, if not set, whole location is anonymized), **apikey** (apikey to use for BrighterAI), **sequential** (process images sequentially, compatible with BrighterAI), **overwrite** (overwrite existing sessions if inplace is not set).
+
+  16) [`benchmark_scripts/docker_run_combine_results.sh`](benchmark_scripts/docker_run_combine_results.sh) - Runs [`lamar/combine_results_crocodl.py`](lamar/combine_results_crocodl.py) in a Docker container. User arguments and flags: **BENCHMARKING_DIR** (name of the folder within capture folder where benchmarking results are stored), **DESCRIPTION_FILE** (file with model description), **OUTPUT_DIR** (output directory), **LOCAL_FEATURE_METHOD** (local feature extraction method), **MATCHING_METHOD** (feature matching method), **GLOBAL_FEATURE_METHOD** (global feature extraction method), **SCENES** (list of scenes to combine results for), **DEVICES_MAP** (list of devices to use for map sessions), **DEVICES_QUERY** (list of devices to use for query sessions).
 
 ## 4 Data
 
-In this section we will explain how to download our data and how to run benchmarking with your models. If you want to read more about data we provide can have a look [here](DATA.md). considering you have have cloned our [repository](https://github.com/cvg/crocodl-benchmark) set up environments as we explained in section [Getting Started](#1-getting-started). Take not that if you are only running benchmarking, you need only benchmarking dependencies. Here is how to download our dataset:
+In this section we will explain how to download our data and how to run benchmarking with your models. If you want to read more about the data we provide, you can have a look [here](DATA.md). Considering you have cloned our [repository](https://github.com/cvg/crocodl-benchmark) and set up the environment as explained in section [Getting Started](#1-getting-started), take note that if you are only running benchmarking, you need only the benchmarking dependencies. Here is how to download our dataset:
 
 ### 4.1 Challenge data
 
-In this subsection we explain how to download our challenge location data, run benchmarking on it and submit results. All the scripts are by default set to process both locations at once, howevere, you could manually set them such that you process only wanted location. Setting **LOCATION** environmental variable is not needed for benchmarking as none of the scripts that are run bellow, do not use this variable. For the rest of the code, using **LOCATION** might be needed.
+In this subsection we explain how to download our challenge location data, run benchmarking on it and submit results. All the scripts are by default set to process both locations at once, however, you could manually set them such that you process only the wanted location.
 
 #### Step 1 - Download
-We provide a simple script to download all challenge data at once using huggingface-api. The script will create the necessary folder structure such that data is ready out of the box. For the code to run smoothly, you should use given folder structure. Firstly, to download challenge data you can run:
+We provide a simple script to download all challenge data at once using huggingface-api. The script will create the necessary folder structure such that data is ready out of the box. For the code to run smoothly, you should use the given folder structure. To download challenge data you can run:
 
 ```
 ./benchmark_scripts/run_download_data.sh --challenge_data
 ```
 
-you can alter the path of the dataset as you wish, however, final folder has to be named **capture/**. Challenge data comes in the same folder as regular, full release, data but with removed ground truth and consisting only of maps and queries for all devices. For the challenge we provide two locations: **HYDRO** and **SUCCULENT**. Once the data is downloaded, you can run benchmarking on it!
+You can alter the path of the dataset as you wish, however, the final folder has to be named **capture/**. Challenge data comes in the same folder as regular, full release, data but with removed ground truth and consisting only of maps and queries for all devices. Once the data is downloaded, you can run benchmarking on it!
 
 #### Step 2 - Benchmarking
 To start the benchmarking you will use the following script:
@@ -315,41 +343,41 @@ To start the benchmarking you will use the following script:
 ./benchmark_scripts/run_benchmarking.sh > output.txt 2>&1
 ```
 
-or 
+or
 
 ```
 ./benchmark_scripts/docker_run_benchmarking.sh > output.txt 2>&1
 ```
 
-if you wish to run in Docker container. You can remove printing out to a .txt file, however, output might get too long to read in the CLI. You can either use the methods already available in lamar or implement your own. Make sure to update the flags in the run_benchmarking.sh script accordingly.
+if you wish to run in a Docker container. You can remove printing to a `.txt` file, however, the output might get too long to read in the CLI. You can use any of the methods listed in the [Available methods](#available-methods) table above. Make sure to update the flags in the `run_benchmarking.sh` script accordingly.
 
 #### Step 3 - Results file generation
-Finally, you can run the script to zip all the results. Your estimated poses are burried deeply inside of benchmarking output folder (by default set to /capture/{location}/benchmarking_ps, but you can change it inside of [`benchmark_scripts/run_benchmarking.sh`](benchmark_scripts/run_benchmarking.sh) or [`benchmark_scripts/docker_run_benchmarking.sh`](benchmark_scripts/docker_run_benchmarking.sh)), so we made a quick script to generate the submission .zip file. You can run it as follows: 
+Finally, you can run the script to zip all the results. Your estimated poses are stored inside the benchmarking output folder (by default set to `/capture/{location}/benchmarking`, but you can change it inside [`benchmark_scripts/run_benchmarking.sh`](benchmark_scripts/run_benchmarking.sh) or [`benchmark_scripts/docker_run_benchmarking.sh`](benchmark_scripts/docker_run_benchmarking.sh)). We made a quick script to generate the submission `.zip` file. You can run it as follows:
 
 ```
-./benchmarking_scripts/run_combine_results.sh
+./benchmark_scripts/run_combine_results.sh
 ```
 
-or 
+or
 
 ```
-./benchmarking_scripts/docker_run_combine_results.sh
+./benchmark_scripts/docker_run_combine_results.sh
 ```
 
-Similarily with other scripts, you can alter the parameters inside [`benchmark_scripts/run_combine_results.sh`](benchmark_scripts/run_combine_results.sh) or [`benchmark_scripts/dodcker_run_combine_results.sh`](benchmark_scripts/docker_run_combine_results.sh). Do not forget to add description file for your model too! You are now ready to make your submission on our challenge [website](https://www.codabench.org/competitions/9471/), congratulations!
+Similarly with other scripts, you can alter the parameters inside [`benchmark_scripts/run_combine_results.sh`](benchmark_scripts/run_combine_results.sh) or [`benchmark_scripts/docker_run_combine_results.sh`](benchmark_scripts/docker_run_combine_results.sh). Do not forget to add a description file for your model too! You are now ready to make your submission on our challenge [website](https://www.codabench.org/competitions/9471/), congratulations!
 
 ### 4.2 Full release data
 
 #### Step 1 - Download
-We provide a simple script to download all release data at once using huggingface-api. The script will create the necessary folder structure such that data is ready out of the box. For the code to run smoothly, you should use given folder structure. Firstly, to download challenge data you can run:
+We provide a simple script to download all release data at once using huggingface-api. The script will create the necessary folder structure such that data is ready out of the box. For the code to run smoothly, you should use the given folder structure. To download the full release data you can run:
 
 ```
 ./benchmark_scripts/run_download_data.sh --full_data --raw_data
 ```
 
-you can alter the path of the dataset as you wish, however, final folder has to be named **capture/**. We have separated raw data and capture data in separate datasets such that user could omit raw data download, as it requires significantly more storage. To do this just omit **raw_data** flag. Similarly, you could omit **full_data** flag in order to download raw data only. You should also remove locations from the download script as you wish. Depending on the location download might take some time, so be patient! Once the download is done, you could test our pipeline, or your own methods! Consider that our download script uses git to clone the location. This means that actual size of the downloaded is larger(usually double) than the location size due to the **.git** folder that is also downloaded. This folder is deleted upon download.
+You can alter the path of the dataset as you wish, however, the final folder has to be named **capture/**. We have separated raw data and capture data in separate datasets such that the user can omit the raw data download, as it requires significantly more storage. To do this just omit the **raw_data** flag. Similarly, you could omit the **full_data** flag in order to download raw data only. You should also remove locations from the download script as you wish. Depending on the location, the download might take some time, so be patient! Once the download is done, you could test our pipeline, or your own methods!
 
-If you would like to download the data yourself, note that three files **{LOCATION}_{device}.txt** should be moved in the parent folder. After the download your **capture** folder should look like this:
+If you would like to download the data yourself, note that three files **{LOCATION}_{device}.txt** should be moved to the parent folder. After the download your **capture** folder should look like this:
 
 ```
 capture/                                 
